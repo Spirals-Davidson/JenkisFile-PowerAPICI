@@ -24,7 +24,8 @@ def csv2json(String CSVFile) {
  * Convert CSV format to JSon format
  * @param CSVFile : The table CSV to convert
  */
-def csv2json(File CSVFile) {
+def csv2jsonFile(String path_file) {
+    File CSVFile = new File(path_file)
     def json = "{"
     CSVFile.eachLine { line ->
         json += "\"time\":"+csv2json(line)+","
@@ -33,7 +34,7 @@ def csv2json(File CSVFile) {
     return new File("datapower.json").write(json)
 }
 
-csv2json(new File("C:\\Users\\Admin\\Desktop\\dev\\gitproject\\JenkisFile-PowerAPICI\\resources\\com\\powerapi\\test.csv"))
+csv2jsonFile("C:\\Users\\Admin\\Desktop\\dev\\gitproject\\JenkisFile-PowerAPICI\\resources\\com\\powerapi\\test.csv")
 /**
  * Send CSV format to elasticSearch after have transform CSV to JSON
  * @param CSVFile : The CSV to send
