@@ -23,19 +23,16 @@ def csv2json(String CSVFile) {
 /**
  * Convert CSV format to JSon format
  * @param CSVFile : The table CSV to convert
- * TODO : String[] not in this function
  */
 def csv2jsonString(String CSVString) {
     def CSVFile = CSVString.split("mW")
 
     def json = "{"
     for (def i = 0; i < CSVFile.length - 1; i++) { // TODO : I don't know why but need the -1 --'
-        //Need the \\\ to pipeline
         json += "\"time\":" + csv2json(CSVFile[i]) + ","
     }
 
     json = json.substring(0, json.length() - 1)
-
     return json + "}"
 }
 
