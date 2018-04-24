@@ -39,7 +39,7 @@ def csv2jsonFile(File CSVFile) {
  */
 def csv2jsonString(String[] CSVFile) {
     def json = "{"
-    for(String line : CSVFile)
+    for(String line : CSVFile) {
         json += "\"time\":"+csv2json(line)+","
     }
     json = json.substring(0, json.length() - 1)
