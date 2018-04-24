@@ -33,6 +33,19 @@ def csv2jsonFile(File CSVFile) {
     return json + "}"
 }
 
+/**
+ * Convert CSV format to JSon format
+ * @param CSVFile : The table CSV to convert
+ */
+def csv2jsonString(String[] CSVFile) {
+    def json = "{"
+    for(String line : CSVFile)
+        json += "\"time\":"+csv2json(line)+","
+    }
+    json = json.substring(0, json.length() - 1)
+    return json + "}"
+}
+
 csv2jsonFile("C:\\Users\\Admin\\Desktop\\dev\\gitproject\\JenkisFile-PowerAPICI\\resources\\com\\powerapi\\test.csv")
 /**
  * Send CSV format to elasticSearch after have transform CSV to JSON
