@@ -40,6 +40,10 @@ def csv2jsonFile(File CSVFile) {
  */
 def csv2jsonString(String CSVString) {
     def CSVFile = CSVString.split("mW")
+    for(String line : CSVFile){
+        println(line)
+    }
+    println("END OF LINE")
     def json = "{"
     for (String line : CSVFile) {
         json += "\"time\":" + csv2json(line) + ","
