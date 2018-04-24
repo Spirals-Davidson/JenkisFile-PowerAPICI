@@ -19,7 +19,7 @@ def csv2json(String CSVFile) {
     json = json.substring(0, json.length() - 1)
     return json + "}"
 }
-//csv2json("muid=72e9d91f-0b77-4d48-a75c-beeef833a663;timestamp=1524489876920;targets=10991;devices=cpu;power=4900.0 mW")
+csv2jsonString("muid=72e9d91f-0b77-4d48-a75c-beeef833a663;timestamp=1524489876920;targets=10991;devices=cpu;power=4900.0 mW")
 /**
  * Convert CSV format to JSon format
  * @param CSVFile : The table CSV to convert
@@ -36,8 +36,10 @@ def csv2jsonFile(File CSVFile) {
 /**
  * Convert CSV format to JSon format
  * @param CSVFile : The table CSV to convert
+ * TODO : String[] not in this function
  */
-def csv2jsonString(String[] CSVFile) {
+def csv2jsonString(String CSVString) {
+    def CSVFile = CSVString.split("mW")
     def json = "{"
     for(String line : CSVFile) {
         json += "\"time\":"+csv2json(line)+","
@@ -46,7 +48,7 @@ def csv2jsonString(String[] CSVFile) {
     return json + "}"
 }
 
-csv2jsonFile("C:\\Users\\Admin\\Desktop\\dev\\gitproject\\JenkisFile-PowerAPICI\\resources\\com\\powerapi\\test.csv")
+//csv2jsonFile("C:\\Users\\Admin\\Desktop\\dev\\gitproject\\JenkisFile-PowerAPICI\\resources\\com\\powerapi\\test.csv")
 /**
  * Send CSV format to elasticSearch after have transform CSV to JSON
  * @param CSVFile : The CSV to send
