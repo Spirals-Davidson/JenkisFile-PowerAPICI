@@ -40,13 +40,10 @@ def csv2jsonFile(File CSVFile) {
  */
 def csv2jsonString(String CSVString) {
     def CSVFile = CSVString.split("mW")
-    for(String line : CSVFile){
-        println(line)
-    }
-    println("END OF LINE")
+
     def json = "{"
-    for (String line : CSVFile) {
-        json += "\"time\":" + csv2json(line) + ","
+    for (def i=0; i<CSVFile.length-1; i++) { // TODO : I don't know why but need the -1 --'
+        json += "\"time\":" + csv2json(CSVFile[i]) + ","
     }
 
     json = json.substring(0, json.length() - 1)
