@@ -19,7 +19,7 @@ def csv2json(String CSVFile) {
     json = json.substring(0, json.length() - 1)
     return json + "}"
 }
-csv2jsonString("muid=72e9d91f-0b77-4d48-a75c-beeef833a663;timestamp=1524489876920;targets=10991;devices=cpu;power=4900.0 mW")
+
 /**
  * Convert CSV format to JSon format
  * @param CSVFile : The table CSV to convert
@@ -39,6 +39,8 @@ def csv2jsonFile(File CSVFile) {
  * TODO : String[] not in this function
  */
 def csv2jsonString(String CSVString) {
+    println("La string du truc: ")
+    println(CSVString)
     def CSVFile = CSVString.split("mW")
     def json = "{"
     for(String line : CSVFile) {
@@ -47,6 +49,7 @@ def csv2jsonString(String CSVString) {
     json = json.substring(0, json.length() - 1)
     return json + "}"
 }
+csv2jsonString("muid=72e9d91f-0b77-4d48-a75c-beeef833a663;timestamp=1524489876920;targets=10991;devices=cpu;power=4900.0 mWmuid=72e9d91f-0b77-4d48-a75c-beeef833a663;timestamp=1524489876920;targets=10991;devices=cpu;power=4900.0 mWmuid=72e9d91f-0b77-4d48-a75c-beeef833a663;timestamp=1524489876920;targets=10991;devices=cpu;power=4900.0 mW")
 
 //csv2jsonFile("C:\\Users\\Admin\\Desktop\\dev\\gitproject\\JenkisFile-PowerAPICI\\resources\\com\\powerapi\\test.csv")
 /**
