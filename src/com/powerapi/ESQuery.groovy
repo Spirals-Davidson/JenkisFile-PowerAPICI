@@ -42,9 +42,7 @@ def csv2jsonString(String CSVString) {
     def CSVFile = CSVString.split("mW")
     def json = "{"
     for (String line : CSVFile) {
-        if (line.startsWith("muid")) {
-            json += "\"time\":" + csv2json(line) + ","
-        }
+        json += "\"time\":" + csv2json(line) + ","
     }
 
     json = json.substring(0, json.length() - 1)
