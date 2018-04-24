@@ -13,7 +13,8 @@ def csv2json(String CSVFile) {
 
     for (String st : parsingCSV) {
         String[] secParsing = st.split("=")
-        json += "\"" + secParsing[0] + "\":\"" + secParsing[1] + "\","
+        //Need the \\\\\ to pipeline
+        json += "\\\\\"" + secParsing[0] + "\\\\\":\\\\\"" + secParsing[1] + "\\\\\","
     }
     //Retire la virgule de fin
     json = json.substring(0, json.length() - 1)
@@ -42,11 +43,13 @@ def csv2jsonString(String CSVString) {
     def CSVFile = CSVString.split("mW")
 
     def json = "{"
-    for (def i=0; i<CSVFile.length-1; i++) { // TODO : I don't know why but need the -1 --'
-        json += "\"time\":" + csv2json(CSVFile[i]) + ","
+    for (def i = 0; i < CSVFile.length - 1; i++) { // TODO : I don't know why but need the -1 --'
+        //Need the \\\\\ to pipeline
+        json += "\\\\\"time\\\\\":" + csv2json(CSVFile[i]) + ","
     }
 
     json = json.substring(0, json.length() - 1)
+    println(json)
     return json + "}"
 }
 
