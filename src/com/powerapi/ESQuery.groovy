@@ -24,14 +24,13 @@ def csv2json(String CSVFile) {
  * Convert CSV format to JSon format
  * @param CSVFile : The table CSV to convert
  */
-def csv2jsonFile(String path_file) {
-    File CSVFile = new File(path_file)
+def csv2jsonFile(File CSVFile) {
     def json = "{"
     CSVFile.eachLine { line ->
         json += "\"time\":"+csv2json(line)+","
     }
     json = json.substring(0, json.length() - 1)
-    return new File("datapower.json").write(json)
+    return json + "}"
 }
 
 csv2jsonFile("C:\\Users\\Admin\\Desktop\\dev\\gitproject\\JenkisFile-PowerAPICI\\resources\\com\\powerapi\\test.csv")
