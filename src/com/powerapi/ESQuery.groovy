@@ -92,4 +92,4 @@ def sendCSV2ES(String CSVString) {
     }
 }
 
-sendCSV2ES("muid=test;timestamp=1524489876920;targets=10991;devices=cpu;power=4900.0 mW muid=test;timestamp=1524489876920;targets=10991;devices=cpu;power=4900.0 mW")
+sendPowerapiCSV2ES("muid=test;timestamp=1524489876920;targets=10991;devices=cpu;power=4900.0 mW muid=test;timestamp=1524489876920;targets=10991;devices=cpu;power=4900.0 mW")
