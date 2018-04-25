@@ -7,7 +7,7 @@ class PowerapiData {
     String muid
     String devices
     String targets
-    long timestamp
+    def timestamp
     def power
 
     PowerapiData(String powerapiDataCSV){
@@ -25,7 +25,7 @@ class PowerapiData {
                     targets = secParsing[1]
                     break
                 case "timestamp" :
-                    timestamp = Long.parseLong(secParsing[1])
+                    timestamp = secParsing[1]
                     break
                 case "power" :
                     power = secParsing[1]
@@ -92,4 +92,4 @@ def sendPowerapiCSV2ES(String CSVString) {
     }
 }
 
-sendPowerapiCSV2ES("muid=test;timestamp=1524489876920;targets=10991;devices=cpu;power=4900.0 mW muid=test;timestamp=1524489876920;targets=10991;devices=cpu;power=4900.0 mW")
+sendPowerapiCSV2ES("muid=test;timestamp=1524489876920;targets=10991;devices=cpu;power=4900.0 mW muid=testing;timestamp=1524489876920;targets=10991;devices=cpu;power=4900.0 mW")
