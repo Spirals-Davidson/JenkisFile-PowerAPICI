@@ -84,7 +84,7 @@ def sendPOSTMessage(String url, String queryString) {
  * Convert CSV format to JSon format
  * @param CSVFile : The table CSV to convert
  */
-def sendCSV2ES(String CSVString) {
+def sendPowerapiCSV2ES(String CSVString) {
     def CSVFile = CSVString.split("mW")
 
     for (def i = 0; i < CSVFile.length; i++) {
