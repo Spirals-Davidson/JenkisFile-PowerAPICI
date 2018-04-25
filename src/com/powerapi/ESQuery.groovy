@@ -84,7 +84,7 @@ def sendPOSTMessage(String url, String queryString) {
  * Convert CSV format to JSon format
  * @param CSVFile : The table CSV to convert
  */
-def csv2jsonString(String CSVString) {
+def sendCSV2ES(String CSVString) {
     def CSVFile = CSVString.split("mW")
 
     for (def i = 0; i < CSVFile.length; i++) {
@@ -92,4 +92,4 @@ def csv2jsonString(String CSVString) {
     }
 }
 
-csv2jsonString("muid=test;timestamp=1524489876920;targets=10991;devices=cpu;power=4900.0 mW muid=test;timestamp=1524489876920;targets=10991;devices=cpu;power=4900.0 mW")
+sendCSV2ES("muid=test;timestamp=1524489876920;targets=10991;devices=cpu;power=4900.0 mW muid=test;timestamp=1524489876920;targets=10991;devices=cpu;power=4900.0 mW")
