@@ -7,8 +7,8 @@ class PowerapiData {
     String muid
     String devices
     String targets
-    def timestamp
-    def power
+    long timestamp
+    Double power
 
     PowerapiData(String powerapiDataCSV){
         String[] parsingCSV = powerapiDataCSV.split(";")
@@ -25,10 +25,10 @@ class PowerapiData {
                     targets = secParsing[1]
                     break
                 case "timestamp" :
-                    timestamp = secParsing[1]
+                    timestamp = Long.parseLong(secParsing[1])
                     break
                 case "power" :
-                    power = secParsing[1]
+                    power = Double.parseDouble(secParsing[1])
                     break
                 case "default" :
                     println("Default: "+secParsing[0])
@@ -45,7 +45,7 @@ def csv2jsonPowerapidata(String powerapiDataCSV){
 
     header.index(
             _index: "powerapi",
-            _type: "power",
+            _type: "doc",
             _timestamp: powerapiData.timestamp,
     )
 
@@ -92,4 +92,4 @@ def sendPowerapiCSV2ES(String CSVString) {
     }
 }
 
-sendPowerapiCSV2ES("muid=test;timestamp=1524489876920;targets=10991;devices=cpu;power=4900.0 mW muid=testing;timestamp=1524489876920;targets=10991;devices=cpu;power=4900.0 mW")
+sendPowerapiCSV2ES("muid=test;timestamp=1524489876920;targets=10991;devices=cpu;power=4900.0mW muid=testing;timestamp=1524489876921;targets=10991;devices=cpu;power=4900.0mW")
