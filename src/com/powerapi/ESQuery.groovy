@@ -1,23 +1,83 @@
 package com.powerapi
 
-/**
- * Convert CSV format to JSon format
- * @param CSVFile : The CSV to convert
- */
-def csv2json(String CSVFile) {
-    /**
-     * Pour l'instant une string, par la suite un JSONBuilder???
-     */
-    String json = "{"
-    String[] parsingCSV = CSVFile.split(";")
+import groovy.json.JsonBuilder
+import groovy.json.JsonOutput
 
-    for (String st : parsingCSV) {
-        String[] secParsing = st.split("=")
-        json += "\"" + secParsing[0] + "\":\"" + secParsing[1] + "\","
+class PowerapiData {
+    String muid
+    String devices
+    String targets
+    long timestamp
+    def power
+
+    PowerapiData(String powerapiDataCSV){
+        String[] parsingCSV = powerapiDataCSV.split(";")
+        for (String st : parsingCSV) {
+            String[] secParsing = st.split("=")
+            switch (secParsing[0]){
+                case "muid" :
+                    muid = secParsing[1]
+                    break
+                case "devices" :
+                    devices = secParsing[1]
+                    break
+                case "targets" :
+                    targets = secParsing[1]
+                    break
+                case "timestamp" :
+                    timestamp = Long.parseLong(secParsing[1])
+                    break
+                case "power" :
+                    power = secParsing[1]
+                    break
+                case "default" :
+                    println("Default: "+secParsing[0])
+            }
+        }
     }
-    //Retire la virgule de fin
-    json = json.substring(0, json.length() - 1)
-    return json + "}"
+}
+
+def csv2jsonPowerapidata(String powerapiDataCSV){
+    def powerapiData = new PowerapiData(powerapiDataCSV)
+
+    def header = new JsonBuilder()
+    def content = new JsonBuilder()
+
+    header.index(
+            _index: "powerapi",
+            _type: "power",
+            _timestamp: powerapiData.timestamp,
+    )
+
+    content(
+            timestamp: powerapiData.timestamp,
+            muid: powerapiData.muid,
+            devices: powerapiData.devices,
+            targets: powerapiData.targets,
+            power: powerapiData.power
+    )
+
+    //println(JsonOutput.prettyPrint(header.toString()) + '\n' + JsonOutput.prettyPrint(content.toString()) + '\n')
+    sendPOSTMessage("http://elasticsearch.app.projet-davidson.fr/_bulk", header.toString() + '\n' + content.toString() + '\n')
+}
+
+def sendPOSTMessage(String url, String queryString) {
+    def baseUrl = new URL(url)
+
+    HttpURLConnection connection = baseUrl.openConnection()
+    connection.setRequestProperty("Content-Type", "application/x-ndjson")
+
+    connection.requestMethod = 'POST'
+    connection.doOutput = true
+
+    byte[] postDataBytes = queryString.getBytes("UTF-8")
+    connection.getOutputStream().write(postDataBytes)
+
+    if (connection.responseCode < HttpURLConnection.HTTP_BAD_REQUEST) {
+        println JsonOutput.prettyPrint(connection.inputStream.text)
+    } else {
+        println JsonOutput.prettyPrint(connection.errorStream.text)
+    }
 }
 
 /**
@@ -27,57 +87,9 @@ def csv2json(String CSVFile) {
 def csv2jsonString(String CSVString) {
     def CSVFile = CSVString.split("mW")
 
-    def json = "{"
-    for (def i = 0; i < CSVFile.length - 1; i++) { // TODO : I don't know why but need the -1 --'
-        json += "\"time\":" + csv2json(CSVFile[i]) + ","
+    for (def i = 0; i < CSVFile.length; i++) {
+        csv2jsonPowerapidata(CSVFile[i])
     }
-
-    json = json.substring(0, json.length() - 1)
-    return json + "}"
 }
 
-/**
- * Convert CSV format to JSon format
- * @param CSVFile : The table CSV to convert
- */
-def csv2jsonFile(File CSVFile) {
-    def json = "{"
-    CSVFile.eachLine { line ->
-        json += "\"time\":" + csv2json(line) + ","
-    }
-    json = json.substring(0, json.length() - 1)
-    return json + "}"
-}
-
-//csv2jsonFile("C:\\Users\\Admin\\Desktop\\dev\\gitproject\\JenkisFile-PowerAPICI\\resources\\com\\powerapi\\test.csv")
-/**
- * Send CSV format to elasticSearch after have transform CSV to JSON
- * @param CSV : The CSV to send
- * @param path_index : The index to send
- */
-def sendCSV2ES(String path_index, String method, String CSV) {
-    def jsonFormat = csv2jsonString(CSV)
-
-    def url = new URL(path_index)
-    def http = url.openConnection()
-    http.setDoOutput(true)
-    http.setRequestMethod(method)
-    http.setRequestProperty('User-agent', 'groovy script')
-
-    def out = new OutputStreamWriter(http.outputStream)
-    out.write(jsonFormat)
-    out.close()
-
-    println(http.inputStream) // read server response from it
-}
-
-sendCSV2ES("http://elasticsearch.app.projet-davidson.fr/powerapi/power","POST", "muid=test;timestamp=1524489876920;targets=10991;devices=cpu;power=4900.0 mW" +
-        "muid=test;timestamp=1524489876920;targets=10991;devices=cpu;power=4900.0 mWmuid=72e9d91f-0b77-4d48-a75c-beeef833a663;timestamp=1524489876920;targets=10991;devices=cpu;power=4900.0 mW")
-/**
- * Send JSON format to ES
- * @param JSON
- * @param path_index : The index to send
- */
-def sendJSon2ES(String JSON, String path_index) {
-
-}
+csv2jsonString("muid=test;timestamp=1524489876920;targets=10991;devices=cpu;power=4900.0 mW muid=test;timestamp=1524489876920;targets=10991;devices=cpu;power=4900.0 mW")
