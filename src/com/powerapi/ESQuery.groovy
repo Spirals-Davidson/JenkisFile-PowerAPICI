@@ -73,11 +73,13 @@ def sendPOSTMessage(String url, String queryString) {
     byte[] postDataBytes = queryString.getBytes("UTF-8")
     connection.getOutputStream().write(postDataBytes)
 
+    /*
     if (connection.responseCode < HttpURLConnection.HTTP_BAD_REQUEST) {
         println JsonOutput.prettyPrint(connection.inputStream.text)
     } else {
         println JsonOutput.prettyPrint(connection.errorStream.text)
     }
+    */
 }
 
 /**
