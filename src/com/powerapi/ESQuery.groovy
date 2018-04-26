@@ -47,7 +47,7 @@ class TestData {
             String[] secParsing = st.split("=")
             switch (secParsing[0]){
                 case "timestamp" :
-                    timestamp = secParsing[1]
+                    timestamp = Long.parseLong(secParsing[1])
                     break
                 case "testName" :
                     testName = secParsing[1]
@@ -111,8 +111,10 @@ def sendPowerapiCSV2ES(String CSVString) {
     for (def i = 0; i < CSVFile.length; i++) {
         csv2jsonPowerapidata(CSVFile[i])
     }
+
+    println("Data of powerapi are correctly send")
 }
-sendPowerapiCSV2ES("muid=test;timestamp=1524489876920;targets=10991;devices=cpu;power=4900.0mW muid=testing;timestamp=1524489876921;targets=10991;devices=cpu;power=4900.0mW")
+//sendPowerapiCSV2ES("muid=test;timestamp=1524489876920;targets=10991;devices=cpu;power=4900.0mW muid=testing;timestamp=1524489876921;targets=10991;devices=cpu;power=4900.0mW")
 
 def sendTestCSV2ES(String CSVString){
     def CSVFile = CSVString.split("\n")
@@ -120,7 +122,9 @@ def sendTestCSV2ES(String CSVString){
     for (def i = 0; i < CSVFile.length; i++) {
         csv2jsonTestdata(CSVFile[i])
     }
+    println("Data of test are correctly send")
 }
+sendTestCSV2ES("timestamp=1524489876923;testname=createhotel")
 
 def sendPOSTMessage(String url, String queryString) {
     def baseUrl = new URL(url)
@@ -134,11 +138,10 @@ def sendPOSTMessage(String url, String queryString) {
     byte[] postDataBytes = queryString.getBytes("UTF-8")
     connection.getOutputStream().write(postDataBytes)
 
-    /*
+
     if (connection.responseCode < HttpURLConnection.HTTP_BAD_REQUEST) {
-        println JsonOutput.prettyPrint(connection.inputStream.text)
     } else {
-        println JsonOutput.prettyPrint(connection.errorStream.text)
+        println("Youps.. Une erreur est survenu lors de l'envoie d'un donnée!")
     }
-    */
+
 }
