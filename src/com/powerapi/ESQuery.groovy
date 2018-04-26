@@ -61,6 +61,10 @@ class TestData {
     }
 }
 
+/**
+ * Transform PowerapiCSV to Json and send data on powerapi index
+ * @param powerapiDataCSV powerapi CSV string
+ */
 def csv2jsonPowerapidata(String powerapiDataCSV){
     def powerapiData = new PowerapiData(powerapiDataCSV)
 
@@ -85,6 +89,10 @@ def csv2jsonPowerapidata(String powerapiDataCSV){
     sendPOSTMessage("http://elasticsearch.app.projet-davidson.fr/_bulk", header.toString() + '\n' + content.toString() + '\n')
 }
 
+/**
+ * Transform TestCSV to Json and send data on testdata index
+ * @param testDataCSV test CSV string
+ */
 def csv2jsonTestdata(String testDataCSV){
     def testData = new TestData(testDataCSV)
 
@@ -106,9 +114,10 @@ def csv2jsonTestdata(String testDataCSV){
     //println(JsonOutput.prettyPrint(header.toString()) + '\n' + JsonOutput.prettyPrint(content.toString()) + '\n')
     sendPOSTMessage("http://elasticsearch.app.projet-davidson.fr/_bulk", header.toString() + '\n' + content.toString() + '\n')
 }
+
 /**
- * Convert CSV format to JSon format
- * @param CSVFile : The table CSV to convert
+ * parse and send powerapi data to ElasticSearch
+ * @param CSVString the CSV to send
  */
 def sendPowerapiCSV2ES(String CSVString) {
     def CSVFile = CSVString.split("mW")
@@ -121,6 +130,10 @@ def sendPowerapiCSV2ES(String CSVString) {
 }
 //sendPowerapiCSV2ES("muid=test;timestamp=1524489876920;targets=10991;devices=cpu;power=4900.0mW muid=testing;timestamp=1524489876921;targets=10991;devices=cpu;power=4900.0mW")
 
+/**
+ * parse and send test data to ElasticSearch
+ * @param CSVString the CSV to send
+ */
 def sendTestCSV2ES(String CSVString){
     def CSVFile = CSVString.split("\n")
 
@@ -131,6 +144,11 @@ def sendTestCSV2ES(String CSVString){
 }
 sendTestCSV2ES("timestamp=1524489876923;testname=createhotel")
 
+/**
+ * Send Post data to an url
+ * @param url the target to send
+ * @param queryString the query to send
+ */
 def sendPOSTMessage(String url, String queryString) {
     def baseUrl = new URL(url)
 
