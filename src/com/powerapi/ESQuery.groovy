@@ -49,7 +49,7 @@ class TestData {
                 case "timestamp" :
                     timestamp = Long.parseLong(secParsing[1])
                     break
-                case "testName" :
+                case "testname" :
                     testName = secParsing[1]
                     break
             }
