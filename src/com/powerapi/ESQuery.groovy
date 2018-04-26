@@ -40,6 +40,7 @@ class PowerapiData {
 class TestData {
     long timestamp
     String testName
+    String startOrEnd
 
     TestData(String testDataCSV){
         String[] parsingCSV = testDataCSV.split(";")
@@ -51,6 +52,9 @@ class TestData {
                     break
                 case "testname" :
                     testName = secParsing[1]
+                    break
+                case "startorend" :
+                    startOrEnd = secParsing[1]
                     break
             }
         }
@@ -95,7 +99,8 @@ def csv2jsonTestdata(String testDataCSV){
 
     content(
             timestamp: testData.timestamp,
-            testname: testData.testName
+            testname: testData.testName,
+            startOrEnd: testData.startOrEnd
     )
 
     //println(JsonOutput.prettyPrint(header.toString()) + '\n' + JsonOutput.prettyPrint(content.toString()) + '\n')
