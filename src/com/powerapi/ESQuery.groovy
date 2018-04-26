@@ -37,6 +37,26 @@ class PowerapiData {
     }
 }
 
+class TestData {
+    long timestamp
+    String testName
+
+    TestData(String testDataCSV){
+        String[] parsingCSV = testDataCSV.split(";")
+        for (String st : parsingCSV) {
+            String[] secParsing = st.split("=")
+            switch (secParsing[0]){
+                case "timestamp" :
+                    timestamp = secParsing[1]
+                    break
+                case "testName" :
+                    testName = secParsing[1]
+                    break
+            }
+        }
+    }
+}
+
 def csv2jsonPowerapidata(String powerapiDataCSV){
     def powerapiData = new PowerapiData(powerapiDataCSV)
 
@@ -61,6 +81,47 @@ def csv2jsonPowerapidata(String powerapiDataCSV){
     sendPOSTMessage("http://elasticsearch.app.projet-davidson.fr/_bulk", header.toString() + '\n' + content.toString() + '\n')
 }
 
+def csv2jsonTestdata(String testDataCSV){
+    def testData = new TestData(testDataCSV)
+
+    def header = new JsonBuilder()
+    def content = new JsonBuilder()
+
+    header.index(
+            _index: "testdata",
+            _type: "doc",
+            _timestamp: testData.timestamp,
+    )
+
+    content(
+            timestamp: testData.timestamp,
+            testname: testData.testName
+    )
+
+    //println(JsonOutput.prettyPrint(header.toString()) + '\n' + JsonOutput.prettyPrint(content.toString()) + '\n')
+    sendPOSTMessage("http://elasticsearch.app.projet-davidson.fr/_bulk", header.toString() + '\n' + content.toString() + '\n')
+}
+/**
+ * Convert CSV format to JSon format
+ * @param CSVFile : The table CSV to convert
+ */
+def sendPowerapiCSV2ES(String CSVString) {
+    def CSVFile = CSVString.split("mW")
+
+    for (def i = 0; i < CSVFile.length; i++) {
+        csv2jsonPowerapidata(CSVFile[i])
+    }
+}
+sendPowerapiCSV2ES("muid=test;timestamp=1524489876920;targets=10991;devices=cpu;power=4900.0mW muid=testing;timestamp=1524489876921;targets=10991;devices=cpu;power=4900.0mW")
+
+def sendTestCSV2ES(String CSVString){
+    def CSVFile = CSVString.split("\n")
+
+    for (def i = 0; i < CSVFile.length; i++) {
+        csv2jsonTestdata(CSVFile[i])
+    }
+}
+
 def sendPOSTMessage(String url, String queryString) {
     def baseUrl = new URL(url)
 
@@ -81,17 +142,3 @@ def sendPOSTMessage(String url, String queryString) {
     }
     */
 }
-
-/**
- * Convert CSV format to JSon format
- * @param CSVFile : The table CSV to convert
- */
-def sendPowerapiCSV2ES(String CSVString) {
-    def CSVFile = CSVString.split("mW")
-
-    for (def i = 0; i < CSVFile.length; i++) {
-        csv2jsonPowerapidata(CSVFile[i])
-    }
-}
-
-sendPowerapiCSV2ES("muid=test;timestamp=1524489876920;targets=10991;devices=cpu;power=4900.0mW muid=testing;timestamp=1524489876921;targets=10991;devices=cpu;power=4900.0mW")
