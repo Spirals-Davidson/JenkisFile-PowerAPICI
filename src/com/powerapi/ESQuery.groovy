@@ -107,11 +107,6 @@ def csv2jsonTestdata(String testDataCSV){
 def sendPowerapiCSV2ES(String CSVString) {
     def CSVFile = CSVString.split("mW")
 
-    def jsonToSend = ""
-    for (def i = 0; i < CSVFile.length; i++) {
-        jsonToSend += csv2jsonPowerapidata(CSVFile[i])
-    }
-
     /* Create header to send data */
     def header = new JsonBuilder()
     header.index(
@@ -119,11 +114,17 @@ def sendPowerapiCSV2ES(String CSVString) {
             _type: "doc"
     )
 
-    sendPOSTMessage("http://elasticsearch.app.projet-davidson.fr/_bulk", header.toString() + '\n '+ jsonToSend)
+    def jsonToSend = ""
+    for (def i = 0; i < CSVFile.length; i++) {
+        jsonToSend += header.toString()+'\n'
+        jsonToSend += csv2jsonPowerapidata(CSVFile[i])
+    }
+
+    sendPOSTMessage("http://elasticsearch.app.projet-davidson.fr/_bulk", jsonToSend)
     println("Data of powerapi are correctly send")
 }
 
-sendPowerapiCSV2ES("muid=test;timestamp=1524489876920;targets=10991;devices=cpu;power=4900.0mW muid=testing;timestamp=1524489876921;targets=10991;devices=cpu;power=4900.0mW")
+sendPowerapiCSV2ES("muid=test;timestamp=1524489876820;targets=10991;devices=cpu;power=4900.0mWmuid=testing;timestamp=1524489876921;targets=10991;devices=cpu;power=4900.0mW") //muid=testing;timestamp=1524489876921;targets=10991;devices=cpu;power=4900.0mW
 
 /**
  * parse and send test data to ElasticSearch
@@ -132,11 +133,6 @@ sendPowerapiCSV2ES("muid=test;timestamp=1524489876920;targets=10991;devices=cpu;
 def sendTestCSV2ES(String CSVString){
     def CSVFile = CSVString.split("\n")
 
-    def jsonToSend = ""
-    for (def i = 0; i < CSVFile.length; i++) {
-        jsonToSend += csv2jsonTestdata(CSVFile[i])
-    }
-
     /* Create header to send data */
     def header = new JsonBuilder()
     header.index(
@@ -144,10 +140,16 @@ def sendTestCSV2ES(String CSVString){
             _type: "doc"
     )
 
-    sendPOSTMessage("http://elasticsearch.app.projet-davidson.fr/_bulk", header.toString() + '\n' + jsonToSend)
+    def jsonToSend = ""
+    for (def i = 0; i < CSVFile.length; i++) {
+        jsonToSend += header.toString() + '\n'
+        jsonToSend += csv2jsonTestdata(CSVFile[i])
+    }
+
+    sendPOSTMessage("http://elasticsearch.app.projet-davidson.fr/_bulk", jsonToSend)
     println("Data of test are correctly send")
 }
-sendTestCSV2ES("timestamp=1524489876923;testname=createhotel")
+//sendTestCSV2ES("timestamp=1524489876923;testname=createhotel")
 
 /**
  * Send Post data to an url
