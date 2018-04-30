@@ -122,6 +122,7 @@ def sendDataByPackage(def functionConvert, String index, List<String> csvL){
             jsonToSend += header.toString() + '\n'
             jsonToSend += functionConvert(cvsData)
         }
+        println("send: \n"+jsonToSend)
         sendPOSTMessage(Constants.ELASTIC_BULK_PATH, jsonToSend)
     }
 }
@@ -131,6 +132,7 @@ def sendDataByPackage(def functionConvert, String index, List<String> csvL){
  * @param csvString the CSV to send
  */
 def sendPowerapiCSV2ES(String csvString) {
+    println("on coupe")
     def csvFile = csvString.split("mW").toList()
     sendDataByPackage({String s -> csv2jsonPowerapidata(s)}, "powerapi", csvFile)
     println("Data of powerapi are correctly send")
