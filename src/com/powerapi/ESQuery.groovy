@@ -1,5 +1,6 @@
 package com.powerapi
 
+import com.sun.corba.se.spi.orbutil.closure.Closure
 import groovy.json.JsonBuilder
 import groovy.json.JsonOutput
 
@@ -10,28 +11,28 @@ class PowerapiData {
     long timestamp
     Double power
 
-    PowerapiData(String powerapiDataCSV){
+    PowerapiData(String powerapiDataCSV) {
         String[] parsingCSV = powerapiDataCSV.split(";")
         for (String st : parsingCSV) {
             String[] secParsing = st.split("=")
-            switch (secParsing[0]){
-                case "muid" :
+            switch (secParsing[0]) {
+                case "muid":
                     muid = secParsing[1]
                     break
-                case "devices" :
+                case "devices":
                     devices = secParsing[1]
                     break
-                case "targets" :
+                case "targets":
                     targets = secParsing[1]
                     break
-                case "timestamp" :
+                case "timestamp":
                     timestamp = Long.parseLong(secParsing[1])
                     break
-                case "power" :
+                case "power":
                     power = Double.parseDouble(secParsing[1])
                     break
-                case "default" :
-                    println("Default: "+secParsing[0])
+                case "default":
+                    println("Default: " + secParsing[0])
             }
         }
     }
@@ -42,18 +43,18 @@ class TestData {
     String testName
     String startOrEnd
 
-    TestData(String testDataCSV){
+    TestData(String testDataCSV) {
         String[] parsingCSV = testDataCSV.split(";")
         for (String st : parsingCSV) {
             String[] secParsing = st.split("=")
-            switch (secParsing[0]){
-                case "timestamp" :
+            switch (secParsing[0]) {
+                case "timestamp":
                     timestamp = Long.parseLong(secParsing[1])
                     break
-                case "testname" :
+                case "testname":
                     testName = secParsing[1]
                     break
-                case "startorend" :
+                case "startorend":
                     startOrEnd = secParsing[1]
                     break
             }
@@ -65,7 +66,7 @@ class TestData {
  * Transform PowerapiCSV to Json and send data on powerapi index
  * @param powerapiDataCSV powerapi CSV string
  */
-def csv2jsonPowerapidata(String powerapiDataCSV){
+def csv2jsonPowerapidata(String powerapiDataCSV) {
     def powerapiData = new PowerapiData(powerapiDataCSV)
 
     def content = new JsonBuilder()
@@ -78,7 +79,6 @@ def csv2jsonPowerapidata(String powerapiDataCSV){
             power: powerapiData.power
     )
 
-    //println(JsonOutput.prettyPrint(content.toString()) + '\n')
     return content.toString() + '\n'
 }
 
@@ -86,7 +86,7 @@ def csv2jsonPowerapidata(String powerapiDataCSV){
  * Transform TestCSV to Json and send data on testdata index
  * @param testDataCSV test CSV string
  */
-def csv2jsonTestdata(String testDataCSV){
+def csv2jsonTestdata(String testDataCSV) {
     def testData = new TestData(testDataCSV)
 
     def content = new JsonBuilder()
@@ -96,31 +96,43 @@ def csv2jsonTestdata(String testDataCSV){
             startOrEnd: testData.startOrEnd
     )
 
-    //println(JsonOutput.prettyPrint(JsonOutput.prettyPrint(content.toString()) + '\n')
     return content.toString() + '\n'
 }
 
 /**
- * parse and send powerapi data to ElasticSearch
- * @param CSVString the CSV to send
+ * Send data to ElasticSearch separatly by Constants.NB_PAQUET package
+ * @param functionConvert the function to convert csv
+ * @param index the index where send the data
+ * @param csvL csv to send
  */
-def sendPowerapiCSV2ES(String CSVString) {
-    def CSVFile = CSVString.split("mW")
-
+def sendDataByPackage(def functionConvert, String index, List<String> csvL){
     /* Create header to send data */
     def header = new JsonBuilder()
     header.index(
-            _index: "powerapi",
+            _index: index,
             _type: "doc"
     )
 
-    def jsonToSend = ""
-    for (def i = 0; i < CSVFile.length; i++) {
-        jsonToSend += header.toString()+'\n'
-        jsonToSend += csv2jsonPowerapidata(CSVFile[i])
-    }
+    while(!csvL.isEmpty()){
+        def jsonToSend = ""
+        def toSend = csvL.take(Constants.NB_PAQUET)
+        csvL = csvL.drop(Constants.NB_PAQUET)
 
-    sendPOSTMessage("http://elasticsearch.app.projet-davidson.fr/_bulk", jsonToSend)
+        for(def cvsData : toSend){
+            jsonToSend += header.toString() + '\n'
+            jsonToSend += functionConvert(cvsData)
+        }
+        sendPOSTMessage(Constants.ELASTIC_BULK_PATH, jsonToSend)
+    }
+}
+
+/**
+ * parse and send powerapi data to ElasticSearch
+ * @param csvString the CSV to send
+ */
+def sendPowerapiCSV2ES(String csvString) {
+    def csvFile = csvString.split("mW").toList()
+    sendDataByPackage({String s -> csv2jsonPowerapidata(s)}, "powerapi", csvFile)
     println("Data of powerapi are correctly send")
 }
 
@@ -128,25 +140,11 @@ sendPowerapiCSV2ES("muid=test;timestamp=1524489876820;targets=10991;devices=cpu;
 
 /**
  * parse and send test data to ElasticSearch
- * @param CSVString the CSV to send
+ * @param csvString the CSV to send
  */
-def sendTestCSV2ES(String CSVString){
-    def CSVFile = CSVString.split("\n")
-
-    /* Create header to send data */
-    def header = new JsonBuilder()
-    header.index(
-            _index: "testdata",
-            _type: "doc"
-    )
-
-    def jsonToSend = ""
-    for (def i = 0; i < CSVFile.length; i++) {
-        jsonToSend += header.toString() + '\n'
-        jsonToSend += csv2jsonTestdata(CSVFile[i])
-    }
-
-    sendPOSTMessage("http://elasticsearch.app.projet-davidson.fr/_bulk", jsonToSend)
+def sendTestCSV2ES(String csvString) {
+    def csvFile = csvString.split("\n").toList()
+    sendDataByPackage({String s -> csv2jsonTestdata(s)}, "testdata", csvFile)
     println("Data of test are correctly send")
 }
 //sendTestCSV2ES("timestamp=1524489876923;testname=createhotel")
