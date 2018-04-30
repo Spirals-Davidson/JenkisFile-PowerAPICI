@@ -68,14 +68,7 @@ class TestData {
 def csv2jsonPowerapidata(String powerapiDataCSV){
     def powerapiData = new PowerapiData(powerapiDataCSV)
 
-    def header = new JsonBuilder()
     def content = new JsonBuilder()
-
-    header.index(
-            _index: "powerapi",
-            _type: "doc",
-            _timestamp: powerapiData.timestamp,
-    )
 
     content(
             timestamp: powerapiData.timestamp,
@@ -85,8 +78,8 @@ def csv2jsonPowerapidata(String powerapiDataCSV){
             power: powerapiData.power
     )
 
-    //println(JsonOutput.prettyPrint(header.toString()) + '\n' + JsonOutput.prettyPrint(content.toString()) + '\n')
-    sendPOSTMessage("http://elasticsearch.app.projet-davidson.fr/_bulk", header.toString() + '\n' + content.toString() + '\n')
+    //println(JsonOutput.prettyPrint(content.toString()) + '\n')
+    return content.toString() + '\n'
 }
 
 /**
@@ -96,23 +89,15 @@ def csv2jsonPowerapidata(String powerapiDataCSV){
 def csv2jsonTestdata(String testDataCSV){
     def testData = new TestData(testDataCSV)
 
-    def header = new JsonBuilder()
     def content = new JsonBuilder()
-
-    header.index(
-            _index: "testdata",
-            _type: "doc",
-            _timestamp: testData.timestamp,
-    )
-
     content(
             timestamp: testData.timestamp,
             testname: testData.testName,
             startOrEnd: testData.startOrEnd
     )
 
-    //println(JsonOutput.prettyPrint(header.toString()) + '\n' + JsonOutput.prettyPrint(content.toString()) + '\n')
-    sendPOSTMessage("http://elasticsearch.app.projet-davidson.fr/_bulk", header.toString() + '\n' + content.toString() + '\n')
+    //println(JsonOutput.prettyPrint(JsonOutput.prettyPrint(content.toString()) + '\n')
+    return content.toString() + '\n'
 }
 
 /**
@@ -122,13 +107,23 @@ def csv2jsonTestdata(String testDataCSV){
 def sendPowerapiCSV2ES(String CSVString) {
     def CSVFile = CSVString.split("mW")
 
+    def jsonToSend = ""
     for (def i = 0; i < CSVFile.length; i++) {
-        csv2jsonPowerapidata(CSVFile[i])
+        jsonToSend += csv2jsonPowerapidata(CSVFile[i])
     }
 
+    /* Create header to send data */
+    def header = new JsonBuilder()
+    header.index(
+            _index: "powerapi",
+            _type: "doc"
+    )
+
+    sendPOSTMessage("http://elasticsearch.app.projet-davidson.fr/_bulk", header.toString() + '\n '+ jsonToSend)
     println("Data of powerapi are correctly send")
 }
-//sendPowerapiCSV2ES("muid=test;timestamp=1524489876920;targets=10991;devices=cpu;power=4900.0mW muid=testing;timestamp=1524489876921;targets=10991;devices=cpu;power=4900.0mW")
+
+sendPowerapiCSV2ES("muid=test;timestamp=1524489876920;targets=10991;devices=cpu;power=4900.0mW muid=testing;timestamp=1524489876921;targets=10991;devices=cpu;power=4900.0mW")
 
 /**
  * parse and send test data to ElasticSearch
@@ -137,9 +132,19 @@ def sendPowerapiCSV2ES(String CSVString) {
 def sendTestCSV2ES(String CSVString){
     def CSVFile = CSVString.split("\n")
 
+    def jsonToSend = ""
     for (def i = 0; i < CSVFile.length; i++) {
-        csv2jsonTestdata(CSVFile[i])
+        jsonToSend += csv2jsonTestdata(CSVFile[i])
     }
+
+    /* Create header to send data */
+    def header = new JsonBuilder()
+    header.index(
+            _index: "testdata",
+            _type: "doc"
+    )
+
+    sendPOSTMessage("http://elasticsearch.app.projet-davidson.fr/_bulk", header.toString() + '\n' + jsonToSend)
     println("Data of test are correctly send")
 }
 sendTestCSV2ES("timestamp=1524489876923;testname=createhotel")
