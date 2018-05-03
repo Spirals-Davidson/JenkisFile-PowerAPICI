@@ -248,8 +248,11 @@ def sendPowerapiAndTestCSV(String powerapiCSV, String testCSV) {
     test.stream().each({ testList.add(new TestData(it)) })
 
     List<PowerapiCI> powerapiCIList = findListPowerapiCI(powerapiList, testList)
-    sendDataByPackage({ PowerapiCI p -> mapPowerapiCItoJson(p) }, "powerapici   ", powerapiCIList)
+    for(PowerapiCI papici : powerapiCIList){
+        println(papici.testName+ ": "+papici.power)
+    }
+    sendDataByPackage({ PowerapiCI p -> mapPowerapiCItoJson(p) }, "powerapici", powerapiCIList)
     println("Data correctly send")
 }
 
-sendPowerapiAndTestCSV("muid=test;timestamp=1524489877117;targets=10991;devices=cpu;power=4900.0mWmuid=testing;timestamp=1524489876928;targets=10991;devices=cpu;power=4900.0mW", "timestamp=1524489876923;testname=test1\ntimestamp=1524489877100;testname=test1\ntimestamp=1524489877110;testname=test2\ntimestamp=1524489877119;testname=test2")
+sendPowerapiAndTestCSV("muid=test;timestamp=1525336448587;targets=10991;devices=cpu;power=4900.0mWmuid=testing;timestamp=1524489876928;targets=10991;devices=cpu;power=4900.0mW", "timestamp=1525336448586;testname=test1\ntimestamp=1525336448588;testname=test1\ntimestamp=1524489877110;testname=test2\ntimestamp=1524489877119;testname=test2")
