@@ -241,11 +241,11 @@ def sendDataByPackage(def functionConvert, String index, List list) {
 def sendPowerapiAndTestCSV(String powerapiCSV, String testCSV) {
     def powerapi = powerapiCSV.split("mW").toList()
     List<PowerapiData> powerapiList = new ArrayList<>()
-    powerapi.stream().forEach({ powerapiList.add(new PowerapiData(it)) })
+    powerapi.stream().each({ powerapiList.add(new PowerapiData(it)) })
 
     def test = testCSV.split("\n").toList()
     List<TestData> testList = new ArrayList<>()
-    test.stream().forEach({ testList.add(new TestData(it)) })
+    test.stream().each({ testList.add(new TestData(it)) })
 
     List<PowerapiCI> powerapiCIList = findListPowerapiCI(powerapiList, testList)
     sendDataByPackage({ PowerapiCI p -> mapPowerapiCItoJson(p) }, "powerapiCI", powerapiCIList)
