@@ -159,9 +159,13 @@ def findListPowerapiCI(List<PowerapiData> powerapiList, List<TestData> testList,
             it.timestamp >= beginTest.timestamp && it.timestamp <= endTest.timestamp
         })
 
-        //TODO : Add name app and timeBeginApp and End
+        def bool = false
         for (PowerapiData papiD : allPowerapi) {
+            bool = true
             powerapiCIList.add(new PowerapiCI(papiD.power, papiD.timestamp, appName, beginTest.testName, commitName, beginTest.timestamp, endTest.timestamp))
+        }
+        if(!bool){
+            powerapiCIList.add(new PowerapiCI(0, beginTest.timestamp, appName, beginTest.testName, commitName, beginTest.timestamp, endTest.timestamp))
         }
     }
 
