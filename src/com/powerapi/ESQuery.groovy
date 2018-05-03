@@ -248,7 +248,7 @@ def sendPowerapiAndTestCSV(String powerapiCSV, String testCSV) {
     test.stream().each({ testList.add(new TestData(it)) })
 
     List<PowerapiCI> powerapiCIList = findListPowerapiCI(powerapiList, testList)
-    sendDataByPackage({ PowerapiCI p -> mapPowerapiCItoJson(p) }, "powerapiCI", powerapiCIList)
+    sendDataByPackage({ PowerapiCI p -> mapPowerapiCItoJson(p) }, "powerapici   ", powerapiCIList)
     println("Data correctly send")
 }
 
