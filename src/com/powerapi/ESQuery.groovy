@@ -3,63 +3,8 @@ package com.powerapi
 import groovy.json.JsonBuilder
 import groovy.json.JsonOutput
 
-class PowerapiData {
-    String muid
-    String devices
-    String targets
-    long timestamp
-    Double power
-
-    PowerapiData(String powerapiDataCSV) {
-        String[] parsingCSV = powerapiDataCSV.split(";")
-        for (String st : parsingCSV) {
-            String[] secParsing = st.split("=")
-            switch (secParsing[0]) {
-                case "muid":
-                    muid = secParsing[1]
-                    break
-                case "devices":
-                    devices = secParsing[1]
-                    break
-                case "targets":
-                    targets = secParsing[1]
-                    break
-                case "timestamp":
-                    timestamp = Long.parseLong(secParsing[1])
-                    break
-                case "power":
-                    power = Double.parseDouble(secParsing[1])
-                    break
-                case "default":
-                    println("Default: " + secParsing[0])
-            }
-        }
-    }
-}
-
-class TestData {
-    long timestamp
-    String testName
-    String startOrEnd
-
-    TestData(String testDataCSV) {
-        String[] parsingCSV = testDataCSV.split(";")
-        for (String st : parsingCSV) {
-            String[] secParsing = st.split("=")
-            switch (secParsing[0]) {
-                case "timestamp":
-                    timestamp = Long.parseLong(secParsing[1])
-                    break
-                case "testname":
-                    testName = secParsing[1]
-                    break
-                case "startorend":
-                    startOrEnd = secParsing[1]
-                    break
-            }
-        }
-    }
-}
+import java.sql.Timestamp
+import java.text.DateFormat
 
 /**
  * Transform PowerapiCSV to Json and send data on powerapi index
@@ -109,8 +54,6 @@ def mapPowerapiCItoJson(PowerapiCI powerapiCI) {
             timestamp: powerapiCI.timestamp,
             appName: powerapiCI.appName,
             testName: powerapiCI.testName,
-            timeBeginApp: powerapiCI.timeBeginApp,
-            timeEndApp: powerapiCI.timeEndApp,
             timeBeginTest: powerapiCI.timeBeginTest,
             timeEndTest: powerapiCI.timeEndTest,
             commitName: powerapiCI.commitName
@@ -191,13 +134,20 @@ def sendPOSTMessage(String url, String queryString) {
     }
 }
 
-def findListPowerapiCI(List<PowerapiData> powerapiCSV, List<TestData> testCSV, String commitName) {
+/**
+ * Aggregate two lists to return list<PowerapiCI>
+ * @param powerapiList list of PowerapiData
+ * @param testList list of TestData
+ * @param commitName the name of current commit
+ * @return list<PowerapiCI>
+ */
+def findListPowerapiCI(List<PowerapiData> powerapiList, List<TestData> testList, String commitName, String appName) {
     List<PowerapiCI> powerapiCIList = new ArrayList<>()
 
-    while (!testCSV.isEmpty()) {
-        def beginTest = testCSV.pop()
-        def endTest = testCSV.find { it.testName == beginTest.testName }
-        testCSV.remove(endTest)
+    while (!testList.isEmpty()) {
+        def endTest = testList.pop()
+        def beginTest = testList.find { it.testName == endTest.testName }
+        testList.remove(beginTest)
 
         if (beginTest.timestamp > endTest.timestamp) {
             def tmp = beginTest
@@ -205,13 +155,13 @@ def findListPowerapiCI(List<PowerapiData> powerapiCSV, List<TestData> testCSV, S
             endTest = tmp
         }
 
-        def allPowerapi = powerapiCSV.findAll({
+        def allPowerapi = powerapiList.findAll({
             it.timestamp >= beginTest.timestamp && it.timestamp <= endTest.timestamp
         })
 
-        //TODO : Add name app and timeBeginApp and End and commitName
+        //TODO : Add name app and timeBeginApp and End
         for (PowerapiData papiD : allPowerapi) {
-            powerapiCIList.add(new PowerapiCI(papiD.power, papiD.timestamp, "appName", beginTest.testName, commitName, 0, 0, beginTest.timestamp, endTest.timestamp))
+            powerapiCIList.add(new PowerapiCI(papiD.power, papiD.timestamp, appName, beginTest.testName, commitName, beginTest.timestamp, endTest.timestamp))
         }
     }
 
@@ -239,7 +189,7 @@ def sendDataByPackage(def functionConvert, String index, List list) {
     }
 }
 
-def sendPowerapiAndTestCSV(String powerapiCSV, String testCSV, String commitName) {
+def sendPowerapiAndTestCSV(String powerapiCSV, String testCSV, String commitName, String appName) {
     def powerapi = powerapiCSV.split("mW").toList()
     List<PowerapiData> powerapiList = new ArrayList<>()
     powerapi.stream().each({ powerapiList.add(new PowerapiData(it)) })
@@ -248,12 +198,11 @@ def sendPowerapiAndTestCSV(String powerapiCSV, String testCSV, String commitName
     List<TestData> testList = new ArrayList<>()
     test.stream().each({ testList.add(new TestData(it)) })
 
-    List<PowerapiCI> powerapiCIList = findListPowerapiCI(powerapiList, testList, commitName)
+    List<PowerapiCI> powerapiCIList = findListPowerapiCI(powerapiList, testList, commitName, appName)
     for(PowerapiCI papici : powerapiCIList){
         println(papici.testName+ ": "+papici.power)
     }
     sendDataByPackage({ PowerapiCI p -> mapPowerapiCItoJson(p) }, "powerapici", powerapiCIList)
     println("Data correctly send")
 }
-
-sendPowerapiAndTestCSV("muid=test;timestamp=1525336448587;targets=10991;devices=cpu;power=4900.0mWmuid=testing;timestamp=1524489876928;targets=10991;devices=cpu;power=4900.0mW", "timestamp=1525336448586;testname=test1\ntimestamp=1525336448588;testname=test1\ntimestamp=1524489877110;testname=test2\ntimestamp=1524489877119;testname=test2", "commit")
+//sendPowerapiAndTestCSV("muid=test;timestamp=1525336448587;targets=10991;devices=cpu;power=4900.0mWmuid=testing;timestamp=1524489876928;targets=10991;devices=cpu;power=4900.0mW", "timestamp=1525336448586;testname=test1\ntimestamp=1525336448588;testname=test1\ntimestamp=1524489877110;testname=test2\ntimestamp=1524489877119;testname=test2", "commit")
