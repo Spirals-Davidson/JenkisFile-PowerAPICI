@@ -112,7 +112,7 @@ def mapPowerapiCItoJson(PowerapiCI powerapiCI) {
             timeBeginApp: powerapiCI.timeBeginApp,
             timeEndApp: powerapiCI.timeEndApp,
             timeBeginTest: powerapiCI.timeBeginTest,
-            timeEndTest: powerapiCI.timeEndTest
+            timeEndTest: powerapiCI.timeEndTest,
             commitName: powerapiCI.commitName
     )
     return content.toString() + '\n'
