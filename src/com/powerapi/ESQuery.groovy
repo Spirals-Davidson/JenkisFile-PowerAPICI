@@ -193,6 +193,7 @@ def sendDataByPackage(def functionConvert, String index, List list) {
 }
 
 def sendPowerapiAndTestCSV(String powerapiCSV, String testCSV, String commitName, String appNameXML) {
+    println("On commence la func")
     def powerapi = powerapiCSV.split("mW").toList()
     List<PowerapiData> powerapiList = new ArrayList<>()
     powerapi.stream().each({ powerapiList.add(new PowerapiData(it)) })
@@ -201,9 +202,10 @@ def sendPowerapiAndTestCSV(String powerapiCSV, String testCSV, String commitName
     List<TestData> testList = new ArrayList<>()
     test.stream().each({ testList.add(new TestData(it)) })
 
+    println("appName")
     def appName = processXml(appNameXML, "//@name")
-
-
+    
+    println("after")
     List<PowerapiCI> powerapiCIList = findListPowerapiCI(powerapiList, testList, commitName, appName)
     for(PowerapiCI papici : powerapiCIList){
         println(papici.testName+ ": "+papici.power)
