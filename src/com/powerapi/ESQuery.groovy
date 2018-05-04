@@ -72,8 +72,12 @@ static findListPowerapiCI(List<PowerapiData> powerapiList, List<TestData> testLi
             it.timestamp >= beginTest.timestamp && it.timestamp <= endTest.timestamp
         })
 
+        def sizeTable = powerapiCIList.size()
         for (PowerapiData papiD : allPowerapi) {
             powerapiCIList.add(new PowerapiCI(papiD.power, papiD.timestamp, appName, beginTest.testName, commitName, beginTest.timestamp, endTest.timestamp))
+        }
+        if(powerapiCIList.size() == sizeTable){ /* Si aucune mesure n'a était prise pour ce test */
+            powerapiCIList.add(new PowerapiCI(0, beginTest.timestamp, appName, beginTest.testName, commitName, beginTest.timestamp, endTest.timestamp))
         }
     }
 
