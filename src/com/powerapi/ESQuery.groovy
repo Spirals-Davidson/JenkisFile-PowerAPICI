@@ -204,12 +204,15 @@ def sendPowerapiAndTestCSV(String powerapiCSV, String testCSV, String commitName
 
     println("appName")
     def appName = processXml(appNameXML, "//@name")
-    
+
     println("after")
     List<PowerapiCI> powerapiCIList = findListPowerapiCI(powerapiList, testList, commitName, appName)
+    println("after findList")
+
     for(PowerapiCI papici : powerapiCIList){
         println(papici.testName+ ": "+papici.power)
     }
+    println("after boucle")
     sendDataByPackage({ PowerapiCI p -> mapPowerapiCItoJson(p) }, "powerapici", powerapiCIList)
     println("Data correctly send")
 }
