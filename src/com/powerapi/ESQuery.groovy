@@ -1,10 +1,9 @@
 package com.powerapi
 
 import groovy.json.JsonBuilder
+import javax.xml.xpath.*
+import javax.xml.parsers.DocumentBuilderFactory
 import groovy.json.JsonOutput
-
-import java.sql.Timestamp
-import java.text.DateFormat
 
 /**
  * Transform PowerapiCSV to Json and send data on powerapi index
@@ -193,7 +192,7 @@ def sendDataByPackage(def functionConvert, String index, List list) {
     }
 }
 
-def sendPowerapiAndTestCSV(String powerapiCSV, String testCSV, String commitName, String appName) {
+def sendPowerapiAndTestCSV(String powerapiCSV, String testCSV, String commitName, String appNameXML) {
     def powerapi = powerapiCSV.split("mW").toList()
     List<PowerapiData> powerapiList = new ArrayList<>()
     powerapi.stream().each({ powerapiList.add(new PowerapiData(it)) })
@@ -201,6 +200,9 @@ def sendPowerapiAndTestCSV(String powerapiCSV, String testCSV, String commitName
     def test = testCSV.split("\n").toList()
     List<TestData> testList = new ArrayList<>()
     test.stream().each({ testList.add(new TestData(it)) })
+
+    def appName = processXml(appNameXML, "//@name")
+
 
     List<PowerapiCI> powerapiCIList = findListPowerapiCI(powerapiList, testList, commitName, appName)
     for(PowerapiCI papici : powerapiCIList){
@@ -210,3 +212,11 @@ def sendPowerapiAndTestCSV(String powerapiCSV, String testCSV, String commitName
     println("Data correctly send")
 }
 //sendPowerapiAndTestCSV("muid=test;timestamp=1525336448587;targets=10991;devices=cpu;power=4900.0mWmuid=testing;timestamp=1524489876928;targets=10991;devices=cpu;power=4900.0mW", "timestamp=1525336448586;testname=test1\ntimestamp=1525336448588;testname=test1\ntimestamp=1524489877110;testname=test2\ntimestamp=1524489877119;testname=test2", "commit")
+
+def processXml( String xml, String xpathQuery ) {
+    def xpath = XPathFactory.newInstance().newXPath()
+    def builder     = DocumentBuilderFactory.newInstance().newDocumentBuilder()
+    def inputStream = new ByteArrayInputStream(xml.bytes)
+    def records     = builder.parse(inputStream).documentElement
+    xpath.evaluate( xpathQuery, records )
+}
