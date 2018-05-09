@@ -58,6 +58,7 @@ def sendPOSTMessage(String url, String queryString) {
 def
 static findListPowerapiCI(List<PowerapiData> powerapiList, List<TestData> testList, String commitName, String appName) {
     List<PowerapiCI> powerapiCIList = new ArrayList<>()
+    println("init list")
     def powerList = new ArrayList<>()
 
     while (!testList.isEmpty()) {
@@ -72,38 +73,43 @@ static findListPowerapiCI(List<PowerapiData> powerapiList, List<TestData> testLi
             endTest = tmp
         }
 
+        println("calcul timestamp")
         def testDurationInMs = endTest.timestamp - beginTest.timestamp
 
         def allPowerapi = powerapiList.findAll({
             it.timestamp >= beginTest.timestamp && it.timestamp <= endTest.timestamp
         })
 
-        def sizeTable = powerapiCIList.size()
-
+        println("boucle power")
         for (PowerapiData papiD : allPowerapi) {
             powerList.add(papiD.power)
         }
-
+        println("end boucle")
         if (powerList.size() != 0) {
             //Calcul de la somme des power puis de la moyenne pour un id de test
+            println("somme power")
             def sumPowers = 0
             for (def power : powerList) {
                 sumPowers += power
             }
-
+            println("apres somme power")
             def averagePowerInMilliWatts = sumPowers / powerList.size()
+            println("average")
             long averagePowerInWatt = averagePowerInMilliWatts / 1000
 
+            println("average")
             long durationInSec = testDurationInMs / 1000
 
             //Conversion en joule a partir des donnees en secondes et watts
+            println("energy")
             def energy = convertToJoule(averagePowerInWatt, durationInSec)
 
+            println("powerapi")
             for (PowerapiData papiD : allPowerapi) {
                 powerapiCIList.add(new PowerapiCI(papiD.power, papiD.timestamp, appName, beginTest.testName, commitName, beginTest.timestamp, endTest.timestamp, testDurationInMs, energy))
             }
-        }
-        if (powerapiCIList.size() == sizeTable) { /* Si aucune mesure n'a été prise pour ce test */
+        } else { /* Si aucune mesure n'a été prise pour ce test */
+            println("else")
             powerapiCIList.add(new PowerapiCI(0, beginTest.timestamp, appName, beginTest.testName, commitName, beginTest.timestamp, endTest.timestamp, 0, 0))
         }
     }
