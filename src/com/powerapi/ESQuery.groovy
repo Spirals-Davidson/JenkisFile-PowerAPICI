@@ -96,10 +96,10 @@ static findListPowerapiCI(List<PowerapiData> powerapiList, List<TestData> testLi
             println("apres somme power")
             def averagePowerInMilliWatts = sumPowers / powerList.size()
             println("average")
-            long averagePowerInWatt = averagePowerInMilliWatts / 1000
+            double averagePowerInWatt = averagePowerInMilliWatts / 1000
 
             println("average")
-            long durationInSec = testDurationInMs / 1000
+            double durationInSec = testDurationInMs / 1000
 
             //Conversion en joule a partir des donnees en secondes et watts
             println("energy")
@@ -187,7 +187,7 @@ def sendPowerapiAndTestCSV(String powerapiCSV, String testCSV, String commitName
     println("Data correctly send")
 }
 
-def static convertToJoule(long averagePowerInWatt, long durationInSec) {
+def static convertToJoule(double averagePowerInWatt, double durationInSec) {
     return averagePowerInWatt * durationInSec
 }
 
