@@ -175,9 +175,12 @@ def sendPowerapiAndTestCSV(String powerapiCSV, String testCSV, String commitName
     List<TestData> testList = new ArrayList<>()
     test.stream().each({ testList.add(new TestData(it)) })
 
+    println("app name")
     def appName = processXml(appNameXML, "//@name")
+    println("after app name")
     List<PowerapiCI> powerapiCIList = findListPowerapiCI(powerapiList, testList, commitName, appName)
 
+    println("sending data")
     sendDataByPackage({ PowerapiCI p -> mapPowerapiCItoJson(p) }, "powerapici", powerapiCIList)
     println("Data correctly send")
 }
