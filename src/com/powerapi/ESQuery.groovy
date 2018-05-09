@@ -111,7 +111,7 @@ static findListPowerapiCI(List<PowerapiData> powerapiList, List<TestData> testLi
             }
         } else { /* Si aucune mesure n'a été prise pour ce test */
             println("else")
-            powerapiCIList.add(new PowerapiCI(0, beginTest.timestamp, appName, beginTest.testName, commitName, beginTest.timestamp, endTest.timestamp, 0, 0))
+            powerapiCIList.add(new PowerapiCI(0, beginTest.timestamp, appName, beginTest.testName, commitName, beginTest.timestamp, endTest.timestamp, 0d, 0d))
         }
     }
 
