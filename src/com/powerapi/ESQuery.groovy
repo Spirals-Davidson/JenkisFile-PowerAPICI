@@ -57,9 +57,7 @@ def sendPOSTMessage(String url, String queryString) {
  */
 def
 static findListPowerapiCI(List<PowerapiData> powerapiList, List<TestData> testList, String commitName, String appName) {
-    println("init list powerapiCi")
     List<PowerapiCI> powerapiCIList = new ArrayList<>()
-    println("init list")
     def powerList = new ArrayList<>()
 
     while (!testList.isEmpty()) {
@@ -74,43 +72,35 @@ static findListPowerapiCI(List<PowerapiData> powerapiList, List<TestData> testLi
             endTest = tmp
         }
 
-        println("calcul timestamp")
         def testDurationInMs = endTest.timestamp - beginTest.timestamp
 
         def allPowerapi = powerapiList.findAll({
             it.timestamp >= beginTest.timestamp && it.timestamp <= endTest.timestamp
         })
 
-        println("boucle power")
         for (PowerapiData papiD : allPowerapi) {
             powerList.add(papiD.power)
         }
-        println("end boucle")
+
         if (powerList.size() != 0) {
             //Calcul de la somme des power puis de la moyenne pour un id de test
-            println("somme power")
             def sumPowers = 0
             for (def power : powerList) {
                 sumPowers += power
             }
-            println("apres somme power")
+
             def averagePowerInMilliWatts = sumPowers / powerList.size()
-            println("average")
             double averagePowerInWatt = averagePowerInMilliWatts / 1000
 
-            println("average")
             double durationInSec = testDurationInMs / 1000
 
             //Conversion en joule a partir des donnees en secondes et watts
-            println("energy")
             def energy = convertToJoule(averagePowerInWatt, durationInSec)
 
-            println("powerapi")
             for (PowerapiData papiD : allPowerapi) {
                 powerapiCIList.add(new PowerapiCI(papiD.power, papiD.timestamp, appName, beginTest.testName, commitName, beginTest.timestamp, endTest.timestamp, testDurationInMs, energy))
             }
         } else { /* Si aucune mesure n'a été prise pour ce test */
-            println("else")
             powerapiCIList.add(new PowerapiCI(0d, beginTest.timestamp, appName, beginTest.testName, commitName, beginTest.timestamp, endTest.timestamp, 0l, 0d))
         }
     }
@@ -168,7 +158,6 @@ def static processXml(String xml, String xpathQuery) {
  * @return
  */
 def sendPowerapiAndTestCSV(String powerapiCSV, String testCSV, String commitName, String appNameXML) {
-    println("being method")
     def powerapi = powerapiCSV.split("mW").toList()
     List<PowerapiData> powerapiList = new ArrayList<>()
     powerapi.stream().each({ powerapiList.add(new PowerapiData(it)) })
@@ -177,12 +166,9 @@ def sendPowerapiAndTestCSV(String powerapiCSV, String testCSV, String commitName
     List<TestData> testList = new ArrayList<>()
     test.stream().each({ testList.add(new TestData(it)) })
 
-    println("app name")
     def appName = processXml(appNameXML, "//@name")
-    println("after app name")
     def powerapiCIList = findListPowerapiCI(powerapiList, testList, commitName, appName)
 
-    println("sending data")
     sendDataByPackage({ PowerapiCI p -> mapPowerapiCItoJson(p) }, "powerapici", powerapiCIList)
     println("Data correctly send")
 }
