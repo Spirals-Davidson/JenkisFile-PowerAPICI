@@ -57,6 +57,7 @@ def sendPOSTMessage(String url, String queryString) {
  */
 def
 static findListPowerapiCI(List<PowerapiData> powerapiList, List<TestData> testList, String commitName, String appName) {
+    println("init list powerapiCi")
     List<PowerapiCI> powerapiCIList = new ArrayList<>()
     println("init list")
     def powerList = new ArrayList<>()

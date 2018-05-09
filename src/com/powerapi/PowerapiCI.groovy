@@ -8,11 +8,11 @@ class PowerapiCI {
     String commitName
     long timeBeginTest
     long timeEndTest
-    long testDuration
-    long energy
+    def testDuration
+    def energy
 
 
-    PowerapiCI(double power, long timestamp, String appName, String testName, String commitName, long timeBeginTest, long timeEndTest, long testDuration, long energy) {
+    PowerapiCI(double power, long timestamp, String appName, String testName, String commitName, long timeBeginTest, long timeEndTest, def testDuration, def energy) {
         this.power = power
         this.timestamp = timestamp
         this.appName = appName
