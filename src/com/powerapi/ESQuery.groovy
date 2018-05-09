@@ -18,7 +18,9 @@ def static mapPowerapiCItoJson(PowerapiCI powerapiCI) {
             testName: powerapiCI.testName,
             timeBeginTest: powerapiCI.timeBeginTest,
             timeEndTest: powerapiCI.timeEndTest,
-            commitName: powerapiCI.commitName
+            commitName: powerapiCI.commitName,
+            testDuration: powerapiCI.testDuration,
+            energy: powerapiCI.energy
     )
     return content.toString() + '\n'
 }
@@ -56,6 +58,7 @@ def sendPOSTMessage(String url, String queryString) {
 def
 static findListPowerapiCI(List<PowerapiData> powerapiList, List<TestData> testList, String commitName, String appName) {
     List<PowerapiCI> powerapiCIList = new ArrayList<>()
+    def powerList = new ArrayList<>()
 
     while (!testList.isEmpty()) {
         def endTest = testList.pop()
@@ -68,16 +71,38 @@ static findListPowerapiCI(List<PowerapiData> powerapiList, List<TestData> testLi
             endTest = tmp
         }
 
+        def testDurationInMs = endTest.timestamp - beginTest.timestamp
+
         def allPowerapi = powerapiList.findAll({
             it.timestamp >= beginTest.timestamp && it.timestamp <= endTest.timestamp
         })
 
         def sizeTable = powerapiCIList.size()
+        powerList.clear()
         for (PowerapiData papiD : allPowerapi) {
-            powerapiCIList.add(new PowerapiCI(papiD.power, papiD.timestamp, appName, beginTest.testName, commitName, beginTest.timestamp, endTest.timestamp))
+            powerList.add(papiD.power)
         }
-        if(powerapiCIList.size() == sizeTable){ /* Si aucune mesure n'a était prise pour ce test */
-            powerapiCIList.add(new PowerapiCI(0, beginTest.timestamp, appName, beginTest.testName, commitName, beginTest.timestamp, endTest.timestamp))
+
+        //Calcul de la somme des power puis de la moyenne pour un id de test
+        def sumPowers = 0
+        for (def  power : powerList){
+            sumPowers += power
+        }
+
+        def averagePowerInMilliWatts = sumPowers/powerList.size()
+        long averagePowerInWatt = averagePowerInMilliWatts/1000
+
+        long durationInSec = testDurationInMs/1000
+
+        //Conversion en joule a partir des donnees en secondes et watts
+        def energy = convertToJoule(averagePowerInWatt, durationInSec)
+
+        for (PowerapiData papiD : allPowerapi) {
+            powerapiCIList.add(new PowerapiCI(papiD.power, papiD.timestamp, appName, beginTest.testName, commitName, beginTest.timestamp, endTest.timestamp, testDurationInMs, energy))
+        }
+
+        if(powerapiCIList.size() == sizeTable){ /* Si aucune mesure n'a été prise pour ce test */
+            powerapiCIList.add(new PowerapiCI(0, beginTest.timestamp, appName, beginTest.testName, commitName, beginTest.timestamp, endTest.timestamp, 0, 0))
         }
     }
 
@@ -147,6 +172,11 @@ def sendPowerapiAndTestCSV(String powerapiCSV, String testCSV, String commitName
 
     sendDataByPackage({ PowerapiCI p -> mapPowerapiCItoJson(p) }, "powerapici", powerapiCIList)
     println("Data correctly send")
+}
+
+long convertToJoule(long averagePowerInWatt, long durationInSec){
+
+    return averagePowerInWatt*durationInSec
 }
 
 sendPowerapiAndTestCSV("muid=test;timestamp=1525336448587;targets=10991;devices=cpu;power=4900.0mWmuid=testing;timestamp=1524489876928;targets=10991;devices=cpu;power=4900.0mW", "timestamp=1525336448586;testname=test1\ntimestamp=1525336448588;testname=test1\ntimestamp=1524489877110;testname=test2\ntimestamp=1524489877119;testname=test2", "commit", "<somthing name='coucou'></somthing>")
