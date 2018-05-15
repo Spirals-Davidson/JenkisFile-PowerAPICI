@@ -129,8 +129,8 @@ def static addTestBeginPowers(List<PowerapiCI> powerapiCIList, List<PowerapiData
 
 
                 println "find"
-                powerBefore = Collections.max(powerapiList.findAll {it.timestamp < test.timeBeginTest}).power
-                powerAfter = Collections.min(powerapiList.findAll {it.timestamp > test.timeBeginTest}).power
+                powerBefore = (double) Collections.max(powerapiList.findAll {it.timestamp < test.timeBeginTest}).power
+                powerAfter = (double) Collections.min(powerapiList.findAll {it.timestamp > test.timeBeginTest}).power
 
                 println "la valeur de puissance precedente est "  + powerBefore
                 println "la valeur de puisasnce suivante est "  + powerAfter
