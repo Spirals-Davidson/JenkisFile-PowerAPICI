@@ -73,7 +73,7 @@ static findListPowerapiCI(List<PowerapiData> powerapiList, List<TestData> testLi
             endTest = tmp
         }
 
-        double testDurationInMs = (double) (endTest.timestamp - beginTest.timestamp)
+        def testDurationInMs = endTest.timestamp - beginTest.timestamp
 
         def allPowerapi = powerapiList.findAll({
             it.timestamp >= beginTest.timestamp && it.timestamp <= endTest.timestamp
@@ -90,7 +90,7 @@ static findListPowerapiCI(List<PowerapiData> powerapiList, List<TestData> testLi
             }
 
             def averagePowerInMilliWatts = sumPowers / powerList.size()
-            def energy = convertToJoule(averagePowerInMilliWatts, testDurationInMs)
+            def energy = convertToJoule(averagePowerInMilliWatts, (double) testDurationInMs)
 
             for (PowerapiData papiD : allPowerapi) {
                 powerapiCIList.add(new PowerapiCI(papiD.power, papiD.timestamp, appName, beginTest.testName, commitName, beginTest.timestamp, endTest.timestamp, testDurationInMs, energy))
