@@ -99,30 +99,61 @@ static findListPowerapiCI(List<PowerapiData> powerapiList, List<TestData> testLi
             powerapiCIList.add(new PowerapiCI(0d, beginTest.timestamp, appName, beginTest.testName, commitName, beginTest.timestamp, endTest.timestamp, 0l, 0d))
         }
     }
-    addTestBeginPowers(powerapiCIList)
+    addTestBeginPowers(powerapiCIList, powerapiList)
 
     return powerapiCIList
 }
 
-def static addTestBeginPowers(List<PowerapiCI> powerapiCIList){
-    List<PowerapiCI> powerapiCIListTMP = powerapiCIList
+def static addTestBeginPowers(List<PowerapiCI> powerapiCIList, List<PowerapiData> powerapiList){
+    List<PowerapiCI> powerapiCIListTMP = new ArrayList<>()
+    //Map<List> testDatas = [name, begin, end, power, powerBefore, powerAfter, averagePower]
 
     //papiD.power, papiD.timestamp, appName, beginTest.testName, commitName, beginTest.timestamp, endTest.timestamp, testDurationInMs, energy
     def lastTestName = "begin"
+    int cpt = 0
+    long timeBefore
+    long timeAfter
+    def powerBefore
+    def powerAfter
+    def pSqrd
+    def tSqrd
+    def lSqrd
 
-    for (def test : powerapiCIListTMP){
+    //powerapiList.forEach({println powerapiList.timestamp})
+    for (def test : powerapiCIList){
             if(test.testName != lastTestName) {
-                println "nom du test" + test.testName
+                println "nom du test " + test.testName
                 println "début du test " + test.timeBeginTest
-                println "fin du test " + test.timeEndTest
+                powerBefore = 0
+                powerAfter = Long.MAX_VALUE
 
+
+                println "find"
+                powerBefore = Collections.max(powerapiList.findAll {it.timestamp < test.timeBeginTest}).power
+                powerAfter = Collections.min(powerapiList.findAll {it.timestamp > test.timeBeginTest}).power
+
+                println "la valeur de puissance precedente est "  + powerBefore
+                println "la valeur de puisasnce suivante est "  + powerAfter
+
+
+                //TODO trouver et appliquer la formule
+                   // tSqrd = Math.pow(papid.timestamp-timeBefore,2)
+                   // pSqrd = Math.pow(powerBefore+
+                   // lSqrd = pSqrd + tSqrd
+
+                cpt++
+                println cpt
+
+
+              //  println testDatas
                 //creation dune nouvelle liste ici avec chaque debut et fin de test
                 //comparaison avec les timestamp precedent et suivant, calcul de la moyenne et ajout dans la liste initiale pour combler les trous
-                }
-            }
-            //lastTestName = test.testName
 
-        }
+            }
+            lastTestName = test.testName
+     //   powerapiCIListTMP.add(new PowerapiCI(papid.power, test.timestamp, appName, test.testName, commitName, test.timeBeginTest, test.timeEndTest, test.testDuration, test.energy))
+
+    }
 
     return powerapiCIList
 }
@@ -188,7 +219,7 @@ def sendPowerapiAndTestCSV(String powerapiCSV, String testCSV, String commitName
     def appName = processXml(appNameXML, "//@name")
     def powerapiCIList = findListPowerapiCI(powerapiList, testList, commitName, appName)
 
-   // sendDataByPackage({ PowerapiCI p -> mapPowerapiCItoJson(p) }, "powerapici", powerapiCIList)
+    sendDataByPackage({ PowerapiCI p -> mapPowerapiCItoJson(p) }, "powerapici", powerapiCIList)
     println("Data correctly sent")
 
 }

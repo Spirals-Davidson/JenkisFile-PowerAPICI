@@ -1,12 +1,16 @@
 package com.powerapi
 
-class PowerapiData {
+class PowerapiData implements Comparable{
     String muid
     String devices
     String targets
     long timestamp
     Double power
 
+    @Override
+    int compareTo(powerapiData) {
+        return timestamp-powerapiData.timestamp
+    }
     PowerapiData(String powerapiDataCSV) {
         String[] parsingCSV = powerapiDataCSV.split(";")
         for (String st : parsingCSV) {
