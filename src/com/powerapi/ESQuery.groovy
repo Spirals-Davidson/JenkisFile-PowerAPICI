@@ -113,8 +113,8 @@ def static addTestBeginPowers(List<PowerapiCI> powerapiCIList, List<PowerapiData
     int cpt = 0
     long timeBefore
     long timeAfter
-    def powerBefore
-    def powerAfter
+    double powerBefore
+    double powerAfter
     def pSqrd
     def tSqrd
     def lSqrd
