@@ -128,9 +128,20 @@ def static addTestBeginPowers(List<PowerapiCI> powerapiCIList, List<PowerapiData
             powerAfter = Long.MAX_VALUE
 
             println "find"
-            powerBefore = (Double)((PowerapiData)Collections.max(powerapiList.findAll { it.timestamp < test.timeBeginTest }))   .power
-            powerAfter = (Double)((PowerapiData)Collections.min(powerapiList.findAll { it.timestamp > test.timeBeginTest })).power
+            for(def papid : powerapiList) {
+                if (papid.timestamp < test.timeBeginTest) {
+                    powerBefore = papid.power
+                }
+                if (papid.timestamp > test.timeEndTest) {
+                    powerAfter = papid.power
+                    break
+                }
+            }
+/*
+            powerBefore = (Double)((PowerapiData)Collections.max(powerapiList.findAll { it.timestamp < test.timeBeginTest })).power
 
+            powerAfter = (Double)((PowerapiData)Collections.min(powerapiList.findAll { it.timestamp > test.timeBeginTest })).power
+*/
             println "la valeur de puissance precedente est " + powerBefore
             println "la valeur de puisasnce suivante est " + powerAfter
 
