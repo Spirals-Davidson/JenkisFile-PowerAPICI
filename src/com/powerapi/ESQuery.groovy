@@ -73,7 +73,7 @@ static findListPowerapiCI(List<PowerapiData> powerapiList, List<TestData> testLi
             endTest = tmp
         }
 
-        def testDurationInMs = endTest.timestamp - beginTest.timestamp
+        double testDurationInMs = endTest.timestamp - beginTest.timestamp
 
         def allPowerapi = powerapiList.findAll({
             it.timestamp >= beginTest.timestamp && it.timestamp <= endTest.timestamp
