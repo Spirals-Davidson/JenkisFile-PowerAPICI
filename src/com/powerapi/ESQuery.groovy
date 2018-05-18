@@ -99,67 +99,117 @@ static findListPowerapiCI(List<PowerapiData> powerapiList, List<TestData> testLi
             powerapiCIList.add(new PowerapiCI(0d, beginTest.timestamp, appName, beginTest.testName, commitName, beginTest.timestamp, endTest.timestamp, 0l, 0d))
         }
     }
-    addTestBeginPowers(powerapiCIList, powerapiList)
+    addEstimatedPowersFormTests(powerapiCIList, powerapiList)
 
     return powerapiCIList
 }
 
-def static addTestBeginPowers(List<PowerapiCI> powerapiCIList, List<PowerapiData> powerapiList) {
-    List<PowerapiCI> powerapiCIListTMP = new ArrayList<>()
-    //Map<List> testDatas = [name, begin, end, power, powerBefore, powerAfter, averagePower]
-
-    //papiD.power, papiD.timestamp, appName, beginTest.testName, commitName, beginTest.timestamp, endTest.timestamp, testDurationInMs, energy
+def static addEstimatedPowersFormTests(List<PowerapiCI> powerapiCIList, List<PowerapiData> powerapiList) {
     def lastTestName = "begin"
-    int cpt = 0
     long timeBefore
     long timeAfter
+    long timeFirst
+    long timeLast
     Double powerBefore
     Double powerAfter
-    def pSqrd
-    def tSqrd
-    def lSqrd
+    Double powerFirst
+    Double powerLast
+
+    def powerList = new ArrayList<>()
+    def timeList = new ArrayList<>()
 
     //powerapiList.forEach({println powerapiList.timestamp})
+    powerapiList.sort()
     for (def test : powerapiCIList) {
         if (test.testName != lastTestName) {
-            println "nom du test " + test.testName
-            println "début du test " + test.timeBeginTest
+            println test.testName
             powerBefore = 0
             powerAfter = Long.MAX_VALUE
+            powerFirst = 0
+            powerLast = 0
+            powerList.clear()
+            timeList.clear()
 
-            println "find"
             for(def papid : powerapiList) {
                 if (papid.timestamp < test.timeBeginTest) {
                     powerBefore = papid.power
+                    timeBefore = papid.timestamp
                 }
                 if (papid.timestamp > test.timeEndTest) {
                     powerAfter = papid.power
+                    timeAfter = papid.timestamp
                     break
                 }
             }
+            def allPowerapi = powerapiList.findAll({
+                it.timestamp >= test.timeBeginTest && it.timestamp <= test.timeEndTest
+            })
+
+            for (PowerapiData papiD : allPowerapi) {
+                powerList.add(papiD.power)
+                timeList.add(papiD.timestamp)
+            }
+
+            timeFirst = timeList.first()
+            powerFirst = powerList.first()
+
+            timeLast = timeList.last()
+            powerLast = powerList.last()
 /*
             powerBefore = (Double)((PowerapiData)Collections.max(powerapiList.findAll { it.timestamp < test.timeBeginTest })).power
-
             powerAfter = (Double)((PowerapiData)Collections.min(powerapiList.findAll { it.timestamp > test.timeBeginTest })).power
 */
-            println "la valeur de puissance precedente est " + powerBefore
-            println "la valeur de puisasnce suivante est " + powerAfter
+            // println "la valeur de temps precedente est " + timeBefore
+            // println "le debut du test " + test.timeBeginTest
+            // println "la premiere valeur de temps  est " + timeFirst
+            // println "la derniere valeur de temps est " + timeLast
+            // println "la fin du test " + test.timeEndTest
+            // println "la valeur de temps suivante est " + timeAfter
 
-            //TODO trouver et appliquer la formule
-            // tSqrd = Math.pow(papid.timestamp-timeBefore,2)
-            // pSqrd = Math.pow(powerBefore+
-            // lSqrd = pSqrd + tSqrd
+            if(timeBefore <= test.timeBeginTest && test.timeBeginTest <= timeFirst && timeFirst <= timeLast && timeLast <= test.timeEndTest && test.timeEndTest <= timeAfter){
+                println "before to begin " + (test.timeBeginTest - timeBefore)
+                println "begin to first " + (timeFirst - test.timeBeginTest)
+                println "first to last " + (timeLast - timeFirst)
+                println "last to end " + (test.timeEndTest - timeLast)
+                println "end to after " + (timeAfter - test.timeEndTest)
+            }else{
+                println "NOPE"
+            }
 
-            cpt++
-            println cpt
+            //application de la formule
+            def averagePowerFromBeforeToFirstInMW = (powerBefore + powerFirst) / 2
+            def durationFromBeforeToFirstInMs = timeFirst - timeBefore
+            def averagePowerFromLastToAfterInMW = (powerLast + powerAfter) / 2
+            def durationFromLastToAfterInMs = timeAfter - timeLast
 
-            //  println testDatas
-            //creation dune nouvelle liste ici avec chaque debut et fin de test
-            //comparaison avec les timestamp precedent et suivant, calcul de la moyenne et ajout dans la liste initiale pour combler les trous
+            def estimatedEnergyFromBeforeToFirst = convertToJoule(averagePowerFromBeforeToFirstInMW, durationFromBeforeToFirstInMs)
+            def estimatedEnergyFromLastToAfter = convertToJoule(averagePowerFromLastToAfterInMW, durationFromLastToAfterInMs)
+
+
+            println "EstimatedEnergyFromBeforeToFirst " + estimatedEnergyFromBeforeToFirst
+            println "EstimatedEnergyFromLastToAfter " + estimatedEnergyFromLastToAfter
+
+            def durationFromBeginToFirst = timeFirst-test.timeBeginTest
+            def durationFromLastToEnd = test.timeEndTest-timeLast
+
+            println "durationFromBeginToFirst " + durationFromBeginToFirst
+            println "durationFromLastToEnd " + durationFromLastToEnd
+
+            def estimatedEnergyFromBeginToFirst = (estimatedEnergyFromBeforeToFirst*durationFromBeginToFirst) / 50
+            def estimatedEnergyFromLastToEnd = (estimatedEnergyFromLastToAfter*durationFromLastToEnd) / 50
+
+            println "estimatedEnergyFromBeginToFirst " + estimatedEnergyFromBeginToFirst
+            println "estimatedEnergyFromLastToEnd " + estimatedEnergyFromLastToEnd
+
+            def totalEnergy = estimatedEnergyFromBeginToFirst + test.energy + estimatedEnergyFromLastToEnd
+
+            println "Old Energy : " + test.energy + " --- New Energy estimated : " + totalEnergy
+
+            println "------------------------------------------------------------------"
 
         }
         lastTestName = test.testName
-        //   powerapiCIListTMP.add(new PowerapiCI(papid.power, test.timestamp, appName, test.testName, commitName, test.timeBeginTest, test.timeEndTest, test.testDuration, test.energy))
+       // powerapiCIList.add(new PowerapiCI(papid.power, test.timestamp, appName, test.testName, commitName, test.timeBeginTest, test.timeEndTest, test.testDuration, test.energy))
 
     }
 
