@@ -99,9 +99,9 @@ static findListPowerapiCI(List<PowerapiData> powerapiList, List<TestData> testLi
             powerapiCIList.add(new PowerapiCI(0d, beginTest.timestamp, appName, beginTest.testName, commitName, beginTest.timestamp, endTest.timestamp, 0l, 0d))
         }
     }
-    addEstimatedEnergyFormTests(powerapiCIList, powerapiList, commitName, appName)
+    def newpowerapiCIList = addEstimatedEnergyFormTests(powerapiCIList, powerapiList, commitName, appName)
 
-    return powerapiCIList
+    return newpowerapiCIList
 }
 
 def static addEstimatedEnergyFormTests(List<PowerapiCI> powerapiCIList, List<PowerapiData> powerapiList,  String commitName, String appName) {
@@ -157,10 +157,6 @@ def static addEstimatedEnergyFormTests(List<PowerapiCI> powerapiCIList, List<Pow
             estimatedEnergyFromBeginToFirst = (estimatedEnergyFromBeforeToFirst*(timeFirst-test.timeBeginTest)) / 50
             estimatedEnergyFromLastToEnd = (estimatedEnergyFromLastToAfter*(test.timeEndTest-timeLast)) / 50
             totalEnergy = estimatedEnergyFromBeginToFirst + test.energy + estimatedEnergyFromLastToEnd
-
-            println estimatedEnergyFromBeginToFirst
-            println estimatedEnergyFromLastToEnd
-            println "Old Energy : " + test.energy + " --- New Energy estimated : " + totalEnergy
 
             for (PowerapiData papid : allPowerapi) {
                 newPowerapiCIList.add(new PowerapiCI(papid.power, test.timestamp, appName, test.testName, commitName, test.timeBeginTest, test.timeEndTest, test.testDuration, totalEnergy))
