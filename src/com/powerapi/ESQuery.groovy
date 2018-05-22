@@ -106,10 +106,10 @@ static findListPowerapiCI(List<PowerapiData> powerapiList, List<TestData> testLi
 
 def static addEstimatedEnergyFormTests(List<PowerapiCI> powerapiCIList, List<PowerapiData> powerapiList,  String commitName, String appName) {
     def lastTestName = "begin"
-    long timeBefore
-    long timeAfter
-    long timeFirst
-    long timeLast
+    double timeBefore
+    double timeAfter
+    double timeFirst
+    double timeLast
     Double powerBefore
     Double powerAfter
     Double powerFirst
