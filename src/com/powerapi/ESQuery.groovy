@@ -66,7 +66,7 @@ static findListPowerapiCI(List<PowerapiData> powerapiList, List<TestData> testLi
         def endTest = testList.pop()
         def beginTest = testList.find { it.testName == endTest.testName }
         testList.remove(beginTest)
-
+        println "TEST OUI" + beginTest.timestamp + " , " + endTest.timestamp
         if (beginTest.timestamp > endTest.timestamp) {
             def tmp = beginTest
             beginTest = endTest
