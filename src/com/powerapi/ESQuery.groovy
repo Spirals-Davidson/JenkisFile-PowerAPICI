@@ -62,11 +62,11 @@ static findListPowerapiCI(List<PowerapiData> powerapiList, List<TestData> testLi
     def powerList = new ArrayList<>()
 
     while (!testList.isEmpty()) {
+
         powerList.clear()
         def endTest = testList.pop()
         def beginTest = testList.find { it.testName == endTest.testName }
         testList.remove(beginTest)
-        println "TEST OUI" + beginTest.timestamp + " , " + endTest.timestamp
         if (beginTest.timestamp > endTest.timestamp) {
             def tmp = beginTest
             beginTest = endTest
@@ -152,8 +152,8 @@ def static addEstimatedEnergyFormTests(List<PowerapiCI> powerapiCIList, List<Pow
             powerLast = powerList.last()
 
             //application de la formule
-            estimatedEnergyFromBeforeToFirst = convertToJoule((powerBefore + powerFirst) / 2, timeFirst - timeBefore)
-            estimatedEnergyFromLastToAfter = convertToJoule((powerLast + powerAfter) / 2, timeAfter - timeLast)
+            estimatedEnergyFromBeforeToFirst = convertToJoule((powerBefore + powerFirst) / 2, (double) timeFirst - timeBefore)
+            estimatedEnergyFromLastToAfter = convertToJoule((powerLast + powerAfter) / 2,(double) timeAfter - timeLast)
             estimatedEnergyFromBeginToFirst = (estimatedEnergyFromBeforeToFirst*(timeFirst-test.timeBeginTest)) / 50
             estimatedEnergyFromLastToEnd = (estimatedEnergyFromLastToAfter*(test.timeEndTest-timeLast)) / 50
             totalEnergy = estimatedEnergyFromBeginToFirst + test.energy + estimatedEnergyFromLastToEnd
@@ -219,10 +219,15 @@ def static processXml(String xml, String xpathQuery) {
  * @return
  */
 def sendPowerapiAndTestCSV(String powerapiCSV, String testCSV, String commitName, String appNameXML) {
+    if(powerapiCSV.isEmpty()){
+       println "powerAPICSV empty"
+    }
     def powerapi = powerapiCSV.split("mW").toList()
     List<PowerapiData> powerapiList = new ArrayList<>()
     powerapi.stream().each({ powerapiList.add(new PowerapiData(it)) })
-
+    if(testCSV.isEmpty()){
+        println "testCSV empty"
+    }
     def test = testCSV.split("\n").toList()
     List<TestData> testList = new ArrayList<>()
     test.stream().each({ testList.add(new TestData(it)) })
