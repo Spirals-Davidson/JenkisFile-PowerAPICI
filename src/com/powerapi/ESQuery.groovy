@@ -121,7 +121,6 @@ def static addEstimatedEnergyFormTests(List<PowerapiCI> powerapiCIList, List<Pow
     powerapiList.sort()
     for (def test : powerapiCIList) {
         if (test.testName != lastTestName) {
-            println test.testName
             powerBefore = 0
             powerAfter = Long.MAX_VALUE
             powerList.clear()
@@ -156,12 +155,14 @@ def static addEstimatedEnergyFormTests(List<PowerapiCI> powerapiCIList, List<Pow
             estimatedEnergyFromBeginToFirst = (estimatedEnergyFromBeforeToFirst*(timeFirst-test.timeBeginTest)) / 50
             estimatedEnergyFromLastToEnd = (estimatedEnergyFromLastToAfter*(test.timeEndTest-timeLast)) / 50
             totalEnergy = estimatedEnergyFromBeginToFirst + test.energy + estimatedEnergyFromLastToEnd
-
             for (def testid : powerapiCIList ){
-                testid.energy = totalEnergy
+                if(testid.testName == test.testName){
+                    testid.energy = totalEnergy
+                }
             }
             lastTestName = test.testName
         }
+
     }
     return powerapiCIList
 }
