@@ -117,7 +117,6 @@ def static addEstimatedEnergyFormTests(List<PowerapiCI> powerapiCIList, List<Pow
     def powerList = new ArrayList<>()
     def timeList = new ArrayList<>()
     def totalEnergy, estimatedEnergyFromBeforeToFirst, estimatedEnergyFromLastToAfter, estimatedEnergyFromBeginToFirst, estimatedEnergyFromLastToEnd, allPowerapi
-    List<PowerapiCI> newPowerapiCIList = new ArrayList<>()
 
     powerapiList.sort()
     for (def test : powerapiCIList) {
@@ -158,14 +157,12 @@ def static addEstimatedEnergyFormTests(List<PowerapiCI> powerapiCIList, List<Pow
             estimatedEnergyFromLastToEnd = (estimatedEnergyFromLastToAfter*(test.timeEndTest-timeLast)) / 50
             totalEnergy = estimatedEnergyFromBeginToFirst + test.energy + estimatedEnergyFromLastToEnd
 
-            for (PowerapiData papid : allPowerapi) {
-                newPowerapiCIList.add(new PowerapiCI(papid.power, test.timestamp, appName, test.testName, commitName, test.timeBeginTest, test.timeEndTest, test.testDuration, totalEnergy))
+            for (def testid : powerapiCIList ){
+                testid.energy = totalEnergy
             }
             lastTestName = test.testName
         }
-
     }
-    powerapiCIList.addAll(newPowerapiCIList)
     return powerapiCIList
 }
 
