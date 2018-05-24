@@ -68,31 +68,8 @@ class Converter {
         return content.toString() + '\n'
     }
 
-    /**
-     * Transform TestCSV to Json and send data on testdata index
-     * @param testDataCSV test CSV string
-     */
-    def static mapPowerapiCItoJson(PowerapiCI powerapiCI) {
-        def content = new JsonBuilder()
-        content(
-                power: powerapiCI.power,
-                timestamp: powerapiCI.timestamp,
-                appName: powerapiCI.appName,
-                testName: powerapiCI.testName,
-                timeBeginTest: powerapiCI.timeBeginTest,
-                timeEndTest: powerapiCI.timeEndTest,
-                commitName: powerapiCI.commitName,
-                testDuration: powerapiCI.testDuration,
-                energy: powerapiCI.energy
-        )
-        return content.toString() + '\n'
-    }
-
     def static fillResultatApplication(ResultatApplication resultatApplication, List<List<PowerapiCI>> powerapiCIList) {
-
-        //methods
         List<Methods> methods = new ArrayList<>()
-        Methods newMethods
 
         String lastTestName = ""
         for (def papici : powerapiCIList.get(0)) {
@@ -102,15 +79,21 @@ class Converter {
 
                 for(List<PowerapiCI> papiciL : powerapiCIList) {
                     List<PowerData> powerDatas = new ArrayList<>()
+                    double averageEnergy = 0
+                    long time_b = 0, time_e = 0
                     for(def papici1 : papiciL){
                         if(papici1.testName == papici.testName){
                             powerDatas.add(new PowerData(papici1.power, papici1.timestamp))
+                            averageEnergy = papici1.energy
+                            time_b = papici1.timeBeginTest
+                            time_e = papici1.timeEndTest
                         }
                     }
-                    iterations.add(new Iteration(cpt, papiciL.get(cpt-1).energy, papiciL.get(cpt-1).timeBeginTest, papiciL.get(cpt-1).timeEndTest, powerDatas))
+                    iterations.add(new Iteration(cpt, averageEnergy, time_b, time_e, powerDatas))
+                    cpt++
                 }
 
-                newMethods = new Methods(papici.testName, (papici.timeEndTest - papici.timeBeginTest))
+                Methods newMethods = new Methods(papici.testName, (papici.timeEndTest - papici.timeBeginTest))
                 newMethods.iterations = iterations
                 newMethods.energy = (newMethods.iterations.sum { Iteration iter -> iter.energy }) / newMethods.iterations.size()
                 methods.add(newMethods)
