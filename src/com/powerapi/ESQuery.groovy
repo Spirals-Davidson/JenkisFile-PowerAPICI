@@ -1,13 +1,9 @@
 package com.powerapi
 
 import com.powerapi.converter.Converter
-import com.powerapi.json.Iteration
-import com.powerapi.json.Methods
-import com.powerapi.json.PowerData
 import com.powerapi.json.ResultatApplication
 import com.powerapi.math.Math
 import groovy.json.JsonBuilder
-import groovy.json.JsonOutput
 
 import javax.xml.xpath.*
 import javax.xml.parsers.DocumentBuilderFactory
@@ -93,10 +89,10 @@ static findListPowerapiCI(List<PowerapiData> powerapiList, List<TestData> testLi
 def
 static addEstimatedEnergyFormTests(List<PowerapiCI> powerapiCIList, List<PowerapiData> powerapiList) {
     def lastTestName = ""
-    double timeBefore
-    double timeAfter
-    double timeFirst
-    double timeLast
+    double timeBefore = 0
+    double timeAfter = 0
+    double timeFirst = 0
+    double timeLast  = 0
     Double powerBefore
     Double powerAfter
     Double powerFirst
@@ -137,10 +133,10 @@ static addEstimatedEnergyFormTests(List<PowerapiCI> powerapiCIList, List<Powerap
                 timeList.add(papiD.timestamp)
             }
 
-            timeFirst = timeList.first()
-            powerFirst = powerList.first()
-            timeLast = timeList.last()
-            powerLast = powerList.last()
+            timeFirst = (double)timeList.first()
+            powerFirst = (double)powerList.first()
+            timeLast = (double)timeList.last()
+            powerLast = (double)powerList.last()
 
             //application de la formule
             estimatedEnergyFromBeforeToFirst = Math.convertToJoule((powerBefore + powerFirst) / 2, (double) timeFirst - timeBefore)
