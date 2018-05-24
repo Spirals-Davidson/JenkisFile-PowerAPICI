@@ -128,6 +128,10 @@ static addEstimatedEnergyFormTests(List<PowerapiCI> powerapiCIList, List<Powerap
                 it.timestamp >= test.timeBeginTest && it.timestamp <= test.timeEndTest
             })
 
+            if(allPowerapi.isEmpty()){
+                println("Nom du test vide: "+ test.testName)
+            }
+
             for (PowerapiData papiD : allPowerapi) {
                 powerList.add(papiD.power)
                 timeList.add(papiD.timestamp)
