@@ -199,7 +199,7 @@ def static processXml(String xml, String xpathQuery) {
 
 //processXml("<somthing name='appName'></somthing>", "//@name")
 
-def sendPowerapiciData(long debutApp, String branch, String buildName, String commitName, String appNameXML, List<String> powerapiCSV, List<String> testCSV) {
+def sendPowerapiciData(String debutApp, String branch, String buildName, String commitName, String appNameXML, List<String> powerapiCSV, List<String> testCSV) {
     if (powerapiCSV.isEmpty() || testCSV.isEmpty() || testCSV.size() != powerapiCSV.size()) {
         println "Listes vides ou pas de la même taille"
         return
@@ -218,7 +218,7 @@ def sendPowerapiciData(long debutApp, String branch, String buildName, String co
         powerapiCIList.add(findListPowerapiCI(powerapiList, testList))
     }
 
-    ResultatApplication resultatApplication = new ResultatApplication(debutApp, branch, buildName, commitName, processXml(appNameXML, "//@name"))
+    ResultatApplication resultatApplication = new ResultatApplication(Long.parseLong(debutApp), branch, buildName, commitName, processXml(appNameXML, "//@name"))
     resultatApplication = Converter.fillResultatApplication(resultatApplication, powerapiCIList)
     sendResultat(Constants.ACTUAL_INDEX, resultatApplication)
     println("Data correctly sent")
