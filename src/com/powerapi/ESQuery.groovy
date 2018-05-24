@@ -211,7 +211,7 @@ def sendPowerapiciData(long debutApp, String branch, String buildName, String co
         List<PowerapiData> powerapiList = new ArrayList<>()
         powerapi.stream().each({ powerapiList.add(new PowerapiData(it)) })
 
-        def test = testCSV.get(0).split("\n").toList()
+        def test = testCSV.get(i).split("\n").toList()
         List<TestData> testList = new ArrayList<>()
         test.stream().each({ testList.add(new TestData(it)) })
 
