@@ -88,48 +88,29 @@ class Converter {
         return content.toString() + '\n'
     }
 
-    def static fillResultatApplication(ResultatApplication resultatApplication, List<PowerapiCI> powerapiCIList) {
-        //total energy of the project
-        String lastTestName = ""
-        double energy = 0.0
-        for (def papici : powerapiCIList) {
-            if (papici.testName != lastTestName) {
-                energy += papici.energy
-            }
-        }
-
-        resultatApplication.energy = energy
-
-        //duration
-        resultatApplication.duration = powerapiCIList.max { it.timeEndTest }.timeEndTest - powerapiCIList.min {
-            it.timeBeginTest
-        }.timeBeginTest
+    def static fillResultatApplication(ResultatApplication resultatApplication, List<List<PowerapiCI>> powerapiCIList) {
 
         //methods
         List<Methods> methods = new ArrayList<>()
         Methods newMethods
 
-        int cpt = 1
-
-        for (def papici : powerapiCIList) {
+        String lastTestName = ""
+        for (def papici : powerapiCIList.get(0)) {
             if (papici.testName != lastTestName) {
-                newMethods = new Methods(papici.testName, (papici.timeEndTest - papici.timeBeginTest))
                 List<Iteration> iterations = new ArrayList<>()
-                cpt = 1
+                int cpt = 1
 
-                //TODO Boucle sur toutes les iterations
-                Iteration iteration = new Iteration(cpt++, papici.energy, papici.timeBeginTest, papici.timeEndTest)
-
-                def papiSameName = powerapiCIList.findAll { it.testName == papici.testName }
-
-
-                List<PowerData> powerDatal = new ArrayList<>()
-                for (def papici1 : papiSameName) {
-                    powerDatal.add(new PowerData(papici1.power, papici1.timestamp))
+                for(List<PowerapiCI> papiciL : powerapiCIList) {
+                    List<PowerData> powerDatas = new ArrayList<>()
+                    for(def papici1 : papiciL){
+                        if(papici1.testName == papici.testName){
+                            powerDatas.add(new PowerData(papici1.power, papici1.timestamp))
+                        }
+                    }
+                    iterations.add(new Iteration(cpt, papiciL.get(cpt-1).energy, papiciL.get(cpt-1).timeBeginTest, papiciL.get(cpt-1).timeEndTest, powerDatas))
                 }
-                iteration.power_data = powerDatal
-                iterations.add(iteration)
 
+                newMethods = new Methods(papici.testName, (papici.timeEndTest - papici.timeBeginTest))
                 newMethods.iterations = iterations
                 newMethods.energy = (newMethods.iterations.sum { Iteration iter -> iter.energy }) / newMethods.iterations.size()
                 methods.add(newMethods)
@@ -138,6 +119,13 @@ class Converter {
         }
 
         resultatApplication.methods = methods
+
+        //Total Energy
+        resultatApplication.energy = (double)resultatApplication.methods.sum { Methods m -> m.energy }
+
+        //duration
+        resultatApplication.duration = (long)resultatApplication.methods.sum { Methods m -> m.duration }
+
         return resultatApplication
     }
 }

@@ -199,21 +199,24 @@ def static processXml(String xml, String xpathQuery) {
 
 //processXml("<somthing name='appName'></somthing>", "//@name")
 
-def sendPowerapiciData(long debutApp, String branch, String buildName, String commitName, String appNameXML, String powerapiCSV, String testCSV) {
-    if (powerapiCSV.isEmpty() || testCSV.isEmpty()) {
-        println "powerAPICSV empty"
+def sendPowerapiciData(long debutApp, String branch, String buildName, String commitName, String appNameXML, List<String> powerapiCSV, List<String> testCSV) {
+    if (powerapiCSV.isEmpty() || testCSV.isEmpty() || testCSV.size() != powerapiCSV.size()) {
+        println "Listes vides ou pas de la même taille"
         return
     }
+    List<List<PowerapiCI>> powerapiCIList = new ArrayList<>()
 
-    def powerapi = powerapiCSV.split("mW").toList()
-    List<PowerapiData> powerapiList = new ArrayList<>()
-    powerapi.stream().each({ powerapiList.add(new PowerapiData(it)) })
+    for(int i=0; i<powerapiCSV.size(); i++){
+        def powerapi = powerapiCSV.get(i).split("mW").toList()
+        List<PowerapiData> powerapiList = new ArrayList<>()
+        powerapi.stream().each({ powerapiList.add(new PowerapiData(it)) })
 
-    def test = testCSV.split("\n").toList()
-    List<TestData> testList = new ArrayList<>()
-    test.stream().each({ testList.add(new TestData(it)) })
+        def test = testCSV.get(0).split("\n").toList()
+        List<TestData> testList = new ArrayList<>()
+        test.stream().each({ testList.add(new TestData(it)) })
 
-    def powerapiCIList = findListPowerapiCI(powerapiList, testList)
+        powerapiCIList.add(findListPowerapiCI(powerapiList, testList))
+    }
 
     ResultatApplication resultatApplication = new ResultatApplication(debutApp, branch, buildName, commitName, processXml(appNameXML, "//@name"))
     resultatApplication = Converter.fillResultatApplication(resultatApplication, powerapiCIList)
@@ -225,7 +228,7 @@ def sendResultat(String index, ResultatApplication resultatApplication) {
     /* Create header to send data */
     def header = new JsonBuilder()
     header.index(
-            _index: "powerapici_test",
+            _index: index,
             _type: "doc"
     )
 
