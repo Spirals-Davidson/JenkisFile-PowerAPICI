@@ -91,8 +91,8 @@ static addEstimatedEnergyFormTests(List<PowerapiCI> powerapiCIList, List<Powerap
     def lastTestName = ""
     double timeBefore = 0
     double timeAfter = 0
-    double timeFirst = 0
-    double timeLast = 0
+    double timeFirst
+    double timeLast
     Double powerBefore
     Double powerAfter
     Double powerFirst
@@ -261,7 +261,7 @@ def sendResultat(String index, ResultatApplication resultatApplication) {
     jsonToSend += Converter.resultatApplicationToJson(resultatApplication).toString()
 
     //println JsonOutput.prettyPrint(jsonToSend.toString())
-    //sendPOSTMessage(Constants.ELASTIC_BULK_PATH, jsonToSend)
+    sendPOSTMessage(Constants.ELASTIC_BULK_PATH, jsonToSend)
 }
 
 List<String> dataCSV = new ArrayList<>()
