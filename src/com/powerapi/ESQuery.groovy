@@ -90,15 +90,15 @@ static addEstimatedEnergyFormTests(List<PowerapiCI> powerapiCIList, List<Powerap
     def lastTestName = ""
     double timeBefore = 0
     double timeAfter = 0
-    double timeFirst = 0
-    double timeLast = 0
+    double timeFirst
+    double timeLast
     Double powerBefore
     Double powerAfter
     Double powerFirst
     Double powerLast
     def powerList = new ArrayList<>()
     def timeList = new ArrayList<>()
-    def totalEnergy, estimatedEnergyFromBeforeToFirst, estimatedEnergyFromLastToAfter, estimatedEnergyFromBeginToFirst, estimatedEnergyFromLastToEnd, allPowerapi
+    def totalEnergy, estimatedEnergyFromBeforeToFirst, estimatedEnergyFromLastToAfter, estimatedEnergyFromBeginToFirst, estimatedEnergyFromLastToEnd, estimatedEnergyFromFirstToAfter, estimatedEnergyFromLFirstToEnd, estimatedEnergyFromBeforeToAfter, estimatedEnergyFromBeginToEnd, allPowerapi
 
     powerapiList.sort()
     for (def test : powerapiCIList) {
@@ -132,17 +132,40 @@ static addEstimatedEnergyFormTests(List<PowerapiCI> powerapiCIList, List<Powerap
                 timeList.add(papiD.timestamp)
             }
 
-            timeFirst = (double) timeList.first()
-            powerFirst = (double) powerList.first()
-            timeLast = (double) timeList.last()
-            powerLast = (double) powerList.last()
+            if (powerList.size() != 0) {
 
-            //application de la formule
-            estimatedEnergyFromBeforeToFirst = Math.convertToJoule((powerBefore + powerFirst) / 2, (double) timeFirst - timeBefore)
-            estimatedEnergyFromLastToAfter = Math.convertToJoule((powerLast + powerAfter) / 2, (double) timeAfter - timeLast)
-            estimatedEnergyFromBeginToFirst = (estimatedEnergyFromBeforeToFirst * (timeFirst - test.timeBeginTest)) / Constants.FREQUENCY
-            estimatedEnergyFromLastToEnd = (estimatedEnergyFromLastToAfter * (test.timeEndTest - timeLast)) / Constants.FREQUENCY
-            totalEnergy = estimatedEnergyFromBeginToFirst + test.energy + estimatedEnergyFromLastToEnd
+                timeFirst = (double) timeList.first()
+                powerFirst = (double) powerList.first()
+                timeLast = (double) timeList.last()
+                powerLast = (double) powerList.last()
+
+                estimatedEnergyFromBeforeToFirst = Math.convertToJoule((powerBefore + powerFirst) / 2, (double) timeFirst - timeBefore)
+                estimatedEnergyFromLastToAfter = Math.convertToJoule((powerLast + powerAfter) / 2, (double) timeAfter - timeLast)
+                estimatedEnergyFromBeginToFirst = (estimatedEnergyFromBeforeToFirst * (timeFirst - test.timeBeginTest)) / Constants.FREQUENCY
+                estimatedEnergyFromLastToEnd = (estimatedEnergyFromLastToAfter * (test.timeEndTest - timeLast)) / Constants.FREQUENCY
+                totalEnergy = estimatedEnergyFromBeginToFirst + test.energy + estimatedEnergyFromLastToEnd
+
+            }
+            else if(powerList.size() == 1){
+
+                timeFirst = (double) timeList.first()
+                powerFirst = (double) powerList.first()
+
+                estimatedEnergyFromBeforeToFirst = Math.convertToJoule((powerBefore + powerFirst) / 2, (double) timeFirst - timeBefore)
+                estimatedEnergyFromFirstToAfter = Math.convertToJoule((powerFirst + powerAfter) / 2, (double) timeAfter - timeFirst)
+
+                estimatedEnergyFromBeginToFirst = (estimatedEnergyFromBeforeToFirst * (timeFirst - test.timeBeginTest)) / Constants.FREQUENCY
+                estimatedEnergyFromLFirstToEnd = (estimatedEnergyFromFirstToAfter * (test.timeEndTest - timeFirst)) / Constants.FREQUENCY
+                totalEnergy = estimatedEnergyFromBeginToFirst + estimatedEnergyFromLFirstToEnd
+
+            }
+            else{
+                estimatedEnergyFromBeforeToAfter = Math.convertToJoule((powerBefore + powerAfter) / 2, (double) timeAfter - timeBefore)
+                estimatedEnergyFromBeginToEnd = (estimatedEnergyFromBeforeToAfter * (test.timeEndTest - test.timeBeginTest)) / Constants.FREQUENCY
+
+                totalEnergy = estimatedEnergyFromBeginToEnd
+            }
+
             for (def testid : powerapiCIList) {
                 if (testid.testName == test.testName) {
                     testid.energy = totalEnergy
