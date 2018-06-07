@@ -1,5 +1,6 @@
 package com.powerapi.converter
 
+import com.powerapi.Constants
 import com.powerapi.PowerapiCI
 import com.powerapi.json.Iteration
 import com.powerapi.json.Methods
@@ -15,32 +16,11 @@ class Converter {
      */
     def static resultatApplicationToJson(ResultatApplication resultatApplication) {
 
-/*
-    List<PowerData> powerData = new ArrayList<>()
-    powerData.add(new PowerData(10, 100))
-    powerData.add(new PowerData(15, 150))
-    List<PowerData> powerData1 = new ArrayList<>()
-    powerData1.add(new PowerData(15, 10))
-    powerData1.add(new PowerData(30, 15))
-
-    List<Iteration> iterations = new ArrayList<>()
-    iterations.add(new Iteration(1, (double) ((10.0 + 15.0) / 2), 120l, 145l, powerData))
-    iterations.add(new Iteration(2, (double) ((15.0 + 30.0) / 2), 130l, 140l, powerData1))
-
-    Methods method1 = new Methods("suitefibo", 15, 120, iterations)
-    Methods method2 = new Methods("shouldmachin", 10, 150, iterations)
-
-    List<Methods> methods = new ArrayList<>()
-    methods.add(method1)
-    methods.add(method2)
-
-    ResultatApplication resultatApplication = new ResultatApplication(150l, "branch", "build", 12d, "app", 150l, "commit", methods)
-*/
-
         def content = new JsonBuilder()
         content(
                 timestamp: resultatApplication.timestamp,
                 branch: resultatApplication.branch,
+                build_url: Constants.BUILD_URL+resultatApplication.branch+"/"+resultatApplication.build_name+"/pipeline",
                 build_name: resultatApplication.build_name,
                 energy: resultatApplication.energy,
                 app_name: resultatApplication.app_name,
@@ -77,12 +57,12 @@ class Converter {
                 List<Iteration> iterations = new ArrayList<>()
                 int cpt = 1
 
-                for(List<PowerapiCI> papiciL : powerapiCIList) {
+                for (List<PowerapiCI> papiciL : powerapiCIList) {
                     List<PowerData> powerDatas = new ArrayList<>()
                     double averageEnergy = 0
                     long time_b = 0, time_e = 0
-                    for(def papici1 : papiciL){
-                        if(papici1.testName == papici.testName){
+                    for (def papici1 : papiciL) {
+                        if (papici1.testName == papici.testName) {
                             powerDatas.add(new PowerData(papici1.power, papici1.timestamp))
                             averageEnergy = papici1.energy
                             time_b = papici1.timeBeginTest
@@ -104,10 +84,10 @@ class Converter {
         resultatApplication.methods = methods
 
         //Total Energy
-        resultatApplication.energy = (double)resultatApplication.methods.sum { Methods m -> m.energy }
+        resultatApplication.energy = (double) resultatApplication.methods.sum { Methods m -> m.energy }
 
         //duration
-        resultatApplication.duration = (long)resultatApplication.methods.sum { Methods m -> m.duration }
+        resultatApplication.duration = (long) resultatApplication.methods.sum { Methods m -> m.duration }
 
         return resultatApplication
     }
