@@ -31,6 +31,6 @@ class ResultatApplication {
         this.build_name = build_name
         this.commit_name = commit_name
         this.app_name = app_name
-        this.scm_url
+        this.scm_url = scm_url
     }
 }
