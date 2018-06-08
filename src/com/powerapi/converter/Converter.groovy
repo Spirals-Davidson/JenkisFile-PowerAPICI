@@ -21,6 +21,7 @@ class Converter {
                 timestamp: resultatApplication.timestamp,
                 branch: resultatApplication.branch,
                 build_url: Constants.BUILD_URL+resultatApplication.branch+"/"+resultatApplication.build_name+"/pipeline",
+                scm_url: resultatApplication.scm_url,
                 build_name: resultatApplication.build_name,
                 energy: resultatApplication.energy,
                 app_name: resultatApplication.app_name,
