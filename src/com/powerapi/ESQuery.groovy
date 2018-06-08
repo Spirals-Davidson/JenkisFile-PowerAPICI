@@ -227,7 +227,7 @@ def sendPowerapiciData(long debutApp, String branch, String buildName, String co
         return
     }
 
-    String appName = urlScm.substring(urlScm.lastIndexOf("/"))
+    String appName = urlScm.substring(urlScm.lastIndexOf("/")+1, urlScm.length()-4)
 
     List<List<PowerapiCI>> powerapiCIList = new ArrayList<>()
 
