@@ -15,5 +15,6 @@ class Classe {
 
     Classe(String name) {
         this.name = name
+        methods = new ArrayList<>()
     }
 }
