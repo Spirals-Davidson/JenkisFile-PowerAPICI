@@ -11,10 +11,10 @@ class ResultatApplication {
     String app_name
     long duration
     String commit_name
-    List<Methods> methods
+    List<Classe> classes
     String scm_url
 
-    ResultatApplication(long timestamp, String branch, String build_name, double energy, String app_name, long duration, String commit_name, List<Methods> methods){
+    ResultatApplication(long timestamp, String branch, String build_name, double energy, String app_name, long duration, String commit_name, List<Classe> classes){
         this.timestamp = timestamp
         this.branch = branch
         this.build_name = build_name
@@ -22,7 +22,7 @@ class ResultatApplication {
         this.app_name = app_name
         this.duration = duration
         this.commit_name = commit_name
-        this.methods = methods
+        this.classes = classes
     }
 
     ResultatApplication(long timestamp, String branch, String build_name, String commit_name, String app_name, scm_url){

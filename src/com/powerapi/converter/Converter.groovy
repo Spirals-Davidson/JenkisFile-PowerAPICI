@@ -2,11 +2,13 @@ package com.powerapi.converter
 
 import com.powerapi.Constants
 import com.powerapi.PowerapiCI
+import com.powerapi.json.Classe
 import com.powerapi.json.Iteration
 import com.powerapi.json.Methods
 import com.powerapi.json.PowerData
 import com.powerapi.json.ResultatApplication
 import groovy.json.JsonBuilder
+import sun.nio.cs.StandardCharsets
 
 class Converter {
 
@@ -18,43 +20,55 @@ class Converter {
 
         def content = new JsonBuilder()
         content(
-                timestamp: resultatApplication.timestamp,
-                branch: resultatApplication.branch,
-                build_url: Constants.BUILD_URL+resultatApplication.branch+"/"+resultatApplication.build_name+"/pipeline",
-                scm_url: resultatApplication.scm_url,
-                build_name: resultatApplication.build_name,
-                energy: resultatApplication.energy,
-                app_name: resultatApplication.app_name,
-                duration: resultatApplication.duration,
-                commit_name: resultatApplication.commit_name,
-                methods: resultatApplication.methods.collect {
-                    Methods m ->
-                        [name      : m.name,
-                         energy    : m.energy,
-                         duration  : m.duration,
-                         iterations: m.iterations.collect {
-                             Iteration i ->
-                                 [n         : i.number,
-                                  energy    : i.energy,
-                                  time_begin: i.time_begin,
-                                  time_end  : i.time_end,
-                                  power_data: i.power_data.collect {
-                                      PowerData p ->
-                                          [power    : p.power,
-                                           timestamp: p.timestamp]
+                timestamp   : resultatApplication.timestamp,
+                branch      : resultatApplication.branch,
+                build_url   : Constants.BUILD_URL+resultatApplication.branch+"/"+resultatApplication.build_name+"/pipeline",
+                scm_url     : resultatApplication.scm_url,
+                build_name  : resultatApplication.build_name,
+                energy      : resultatApplication.energy,
+                app_name    : resultatApplication.app_name,
+                duration    : resultatApplication.duration,
+                commit_name : resultatApplication.commit_name,
+                classes     : resultatApplication.classes.collect {
+                    Classe c ->
+                        [name: c.name,
+                         energy: c.energy,
+                         duration: c.duration,
+                         methods: c.methods.collect {
+                             Methods m ->
+                                 [name      : m.name,
+                                  energy    : m.energy,
+                                  duration  : m.duration,
+                                  iterations: m.iterations.collect {
+                                      Iteration i ->
+                                          [n         : i.number,
+                                           energy    : i.energy,
+                                           time_begin: i.time_begin,
+                                           time_end  : i.time_end,
+                                           power_data: i.power_data.collect {
+                                               PowerData p ->
+                                                   [power    : p.power,
+                                                    timestamp: p.timestamp]
+                                           }]
                                   }]
                          }]
                 }
+
         )
         return content.toString() + '\n'
     }
 
-    def static fillResultatApplication(ResultatApplication resultatApplication, List<List<PowerapiCI>> powerapiCIList) {
-        List<Methods> methods = new ArrayList<>()
+    def static fillResultatApplication(ResultatApplication resultatApplication, List<List<PowerapiCI>> powerapiCIList, Map<String, String> classes) {
+        List<Classe> classeL = new ArrayList<>()
 
         String lastTestName = ""
+        String lastClassName = ""
         for (def papici : powerapiCIList.get(0)) {
             if (papici.testName != lastTestName) {
+                if(classes.get(papici.testName) != lastClassName){
+                    lastClassName = classes.get(papici.testName)
+                    classeL.add(new Classe(lastClassName))
+                }
                 List<Iteration> iterations = new ArrayList<>()
                 int cpt = 1
 
@@ -77,18 +91,25 @@ class Converter {
                 Methods newMethods = new Methods(papici.testName, (papici.timeEndTest - papici.timeBeginTest))
                 newMethods.iterations = iterations
                 newMethods.energy = (newMethods.iterations.sum { Iteration iter -> iter.energy }) / newMethods.iterations.size()
-                methods.add(newMethods)
+
+                classeL.find { it.name == classes.get(papici.testName)}.methods.add(newMethods)
             }
             lastTestName = papici.testName
         }
 
-        resultatApplication.methods = methods
+
+        classeL.each {c ->
+              c.duration = (long) c.methods.sum {Methods m -> m.duration}
+              c.energy = (double) c.methods.sum {Methods m -> m.energy}
+        }
+
+        resultatApplication.classes = classeL
 
         //Total Energy
-        resultatApplication.energy = (double) resultatApplication.methods.sum { Methods m -> m.energy }
+        resultatApplication.energy = (double) resultatApplication.classes.sum { Classe m -> m.energy }
 
         //duration
-        resultatApplication.duration = (long) resultatApplication.methods.sum { Methods m -> m.duration }
+        resultatApplication.duration = (long) resultatApplication.classes.sum { Classe m -> m.duration }
 
         return resultatApplication
     }

@@ -5,9 +5,6 @@ import com.powerapi.json.ResultatApplication
 import com.powerapi.math.Math
 import groovy.json.JsonBuilder
 
-import javax.xml.xpath.*
-import javax.xml.parsers.DocumentBuilderFactory
-
 /**
  * Send Post data to an url
  * @param url the target to send
@@ -205,29 +202,14 @@ def sendDataByPackage(def functionConvert, String index, List list) {
     }
 }
 
-/**
- * Search into and XML String a query
- * @param xml The xml String
- * @param xpathQuery The query to search
- * @return
- */
-def static processXml(String xml, String xpathQuery) {
-    def xpath = XPathFactory.newInstance().newXPath()
-    def builder = DocumentBuilderFactory.newInstance().newDocumentBuilder()
-    def inputStream = new ByteArrayInputStream(xml.bytes)
-    def records = builder.parse(inputStream).documentElement
-    xpath.evaluate(xpathQuery, records)
-}
-
-//processXml("<somthing name='appName'></somthing>", "//@name")
-
-def sendPowerapiciData(long debutApp, String branch, String buildName, String commitName, String urlScm, List<String> powerapiCSV, List<String> testCSV) {
+def sendPowerapiciData(long debutApp, String branch, String buildName, String commitName, String urlScm, List<String> powerapiCSV, List<String> testCSV, String XMLClasses) {
     if (powerapiCSV.isEmpty() || testCSV.isEmpty() || testCSV.size() != powerapiCSV.size()) {
         println "Listes vides ou pas de la même taille"
         return
     }
 
     String appName = urlScm.substring(urlScm.lastIndexOf("/")+1, urlScm.length()-4)
+    Map<String, String> classes = parseSurefireXML(XMLClasses)
 
     List<List<PowerapiCI>> powerapiCIList = new ArrayList<>()
 
@@ -244,7 +226,7 @@ def sendPowerapiciData(long debutApp, String branch, String buildName, String co
     }
 
     ResultatApplication resultatApplication = new ResultatApplication(debutApp, branch, buildName, commitName, appName, urlScm)
-    resultatApplication = Converter.fillResultatApplication(resultatApplication, powerapiCIList)
+    resultatApplication = Converter.fillResultatApplication(resultatApplication, powerapiCIList, classes)
     sendResultat(Constants.ACTUAL_INDEX, resultatApplication)
     println("Data correctly sent")
 }
@@ -264,3 +246,36 @@ def sendResultat(String index, ResultatApplication resultatApplication) {
 
     sendPOSTMessage(Constants.ELASTIC_BULK_PATH, jsonToSend)
 }
+
+def static parseSurefireXML(String xml){
+    xml = "<test>"+xml+"</test>"
+
+    Map<String, String> classes = new HashMap<>()
+    def list = new XmlParser().parseText(xml)
+
+    list.each {
+        String classeName = it.attributes().name
+        it.each {
+            classes.put((String)it.attributes().name, classeName)
+        }
+    }
+
+    return classes
+}
+String XML_report = "" +
+        "<test>" +
+        "<testsuite name=\"com.khoubyari.example.test.FiboTest\" time=\"19.331\" tests=\"2\" errors=\"0\" skipped=\"0\" failures=\"0\">\n" +
+        "  <testcase name=\"should_test_suite_fibonacci_use_puissance\" classname=\"com.khoubyari.example.test.FiboTest\" time=\"19.315\"/>\n" +
+        "  <testcase name=\"should_test_suite_fibonacci_courte\" classname=\"com.khoubyari.example.test.FiboTest\" time=\"0.016\"/>\n" +
+        "</testsuite>\n" +
+        "<testsuite name=\"com.khoubyari.example.test.HotelControllerTest\" time=\"0.741\" tests=\"6\" errors=\"0\" skipped=\"0\" failures=\"0\">\n" +
+        "  <testcase name=\"should_update_existing_hotel\" classname=\"com.khoubyari.example.test.HotelControllerTest\" time=\"0.463\"/>\n" +
+        "  <testcase name=\"should_return_all_paginated_hotel\" classname=\"com.khoubyari.example.test.HotelControllerTest\" time=\"0.099\"/>\n" +
+        "  <testcase name=\"should_find_existing_hotel\" classname=\"com.khoubyari.example.test.HotelControllerTest\" time=\"0.026\"/>\n" +
+        "  <testcase name=\"should_return_hotel_find_by_city\" classname=\"com.khoubyari.example.test.HotelControllerTest\" time=\"0.082\"/>\n" +
+        "  <testcase name=\"should_create_hotel\" classname=\"com.khoubyari.example.test.HotelControllerTest\" time=\"0.034\"/>\n" +
+        "  <testcase name=\"should_delete_existing_hotel\" classname=\"com.khoubyari.example.test.HotelControllerTest\" time=\"0.037\"/>\n" +
+        "</testsuite>" +
+        "</test>"
+
+parseSurefireXML(XML_report)
