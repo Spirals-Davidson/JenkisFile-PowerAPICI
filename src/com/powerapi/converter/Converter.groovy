@@ -20,21 +20,21 @@ class Converter {
 
         def content = new JsonBuilder()
         content(
-                timestamp   : resultatApplication.timestamp,
-                branch      : resultatApplication.branch,
-                build_url   : Constants.BUILD_URL+resultatApplication.branch+"/"+resultatApplication.build_name+"/pipeline",
-                scm_url     : resultatApplication.scm_url,
-                build_name  : resultatApplication.build_name,
-                energy      : resultatApplication.energy,
-                app_name    : resultatApplication.app_name,
-                duration    : resultatApplication.duration,
-                commit_name : resultatApplication.commit_name,
-                classes     : resultatApplication.classes.collect {
+                timestamp: resultatApplication.timestamp,
+                branch: resultatApplication.branch,
+                build_url: Constants.BUILD_URL + resultatApplication.branch + "/" + resultatApplication.build_name + "/pipeline",
+                scm_url: resultatApplication.scm_url,
+                build_name: resultatApplication.build_name,
+                energy: resultatApplication.energy,
+                app_name: resultatApplication.app_name,
+                duration: resultatApplication.duration,
+                commit_name: resultatApplication.commit_name,
+                classes: resultatApplication.classes.collect {
                     Classe c ->
-                        [name: c.name,
-                         energy: c.energy,
+                        [name    : c.name,
+                         energy  : c.energy,
                          duration: c.duration,
-                         methods: c.methods.collect {
+                         methods : c.methods.collect {
                              Methods m ->
                                  [name      : m.name,
                                   energy    : m.energy,
@@ -58,14 +58,15 @@ class Converter {
         return content.toString() + '\n'
     }
 
-    def static fillResultatApplication(ResultatApplication resultatApplication, List<List<PowerapiCI>> powerapiCIList, Map<String, String> classes) {
+    def
+    static fillResultatApplication(ResultatApplication resultatApplication, List<List<PowerapiCI>> powerapiCIList, Map<String, String> classes) {
         List<Classe> classeL = new ArrayList<>()
 
         String lastTestName = ""
         String lastClassName = ""
         for (def papici : powerapiCIList.get(0)) {
             if (papici.testName != lastTestName) {
-                if(classes.get(papici.testName) != lastClassName){
+                if (classes.get(papici.testName) != lastClassName) {
                     lastClassName = classes.get(papici.testName)
                     classeL.add(new Classe(lastClassName))
                 }
@@ -92,15 +93,15 @@ class Converter {
                 newMethods.iterations = iterations
                 newMethods.energy = (newMethods.iterations.sum { Iteration iter -> iter.energy }) / newMethods.iterations.size()
 
-                classeL.find { it.name == classes.get(papici.testName)}.methods.add(newMethods)
+                classeL.find { it.name == classes.get(papici.testName) }.methods.add(newMethods)
             }
             lastTestName = papici.testName
         }
 
 
-        classeL.each {c ->
-              c.duration = (long) c.methods.sum {Methods m -> m.duration}
-              c.energy = (double) c.methods.sum {Methods m -> m.energy}
+        classeL.each { c ->
+            c.duration = (long) c.methods.sum { Methods m -> m.duration }
+            c.energy = (double) c.methods.sum { Methods m -> m.energy }
         }
 
         resultatApplication.classes = classeL
