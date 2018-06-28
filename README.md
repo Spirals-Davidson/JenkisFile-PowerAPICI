@@ -1,3 +1,3 @@
 # JenkisFile-PowerAPICI
 
-Librairie partagé pour convertir des données CSV en format JSon afin de les communiquer à un serveur de données ElastiSearch. 
+This project is depreciate. Please, go to [greenci-maven-plugin](https://github.com/Spirals-Davidson/greenci-maven-plugin) to do the same thing more simplier.
